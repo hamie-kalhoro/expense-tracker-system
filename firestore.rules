@@ -1,0 +1,37 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users collection: each user can only read/write their own data
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Expenses collection: authenticated users can create; 
+    // only participants can read/update/delete
+    match /expenses/{expenseId} {
+      allow create: if request.auth != null;
+      allow read: if request.auth != null && (
+        request.auth.uid == resource.data.paidBy ||
+        request.auth.uid in resource.data.splitWith
+      );
+      allow update, delete: if request.auth != null && (
+        request.auth.uid == resource.data.paidBy
+      );
+    }
+
+    // Groups collection: members only
+    match /groups/{groupId} {
+      allow read, write: if request.auth != null && (
+        request.auth.uid in resource.data.members
+      );
+      allow create: if request.auth != null;
+    }
+
+    // Notifications collection: user can only read their own notifications
+    match /notifications/{notificationId} {
+      allow read, delete: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null;
+    }
+  }
+}
