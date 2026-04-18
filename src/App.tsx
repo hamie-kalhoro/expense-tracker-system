@@ -3,7 +3,9 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { DataProvider } from './contexts/DataContext';
-import Login from './components/Login';
+import { FriendsProvider } from './contexts/FriendsContext';
+import { NotificationsProvider } from './contexts/NotificationsContext';
+import Auth from './components/Auth';
 import Dashboard from './components/Dashboard';
 import './index.css';
 
@@ -18,17 +20,14 @@ const AppRoutes = () => {
 
   return (
     <Routes>
-      <Route 
-        path="/login" 
-        element={user ? <Navigate to="/" replace /> : <Login />} 
-      />
-      <Route 
-        path="/" 
+      <Route path="/login" element={user ? <Navigate to="/" replace /> : <Auth />} />
+      <Route
+        path="/"
         element={
           <ProtectedRoute>
             <Dashboard />
           </ProtectedRoute>
-        } 
+        }
       />
     </Routes>
   );
@@ -38,19 +37,23 @@ const App = () => {
   return (
     <AuthProvider>
       <DataProvider>
-        <Router>
-          <AppRoutes />
-          <Toaster 
-            position="bottom-center"
-            toastOptions={{
-              style: {
-                background: 'var(--bg-card)',
-                color: 'var(--text-main)',
-                border: '1px solid var(--border)',
-              }
-            }}
-          />
-        </Router>
+        <NotificationsProvider>
+          <FriendsProvider>
+            <Router>
+              <AppRoutes />
+              <Toaster
+                position="bottom-center"
+                toastOptions={{
+                  style: {
+                    background: 'var(--bg-card)',
+                    color: 'var(--text-main)',
+                    border: '1px solid var(--border)',
+                  },
+                }}
+              />
+            </Router>
+          </FriendsProvider>
+        </NotificationsProvider>
       </DataProvider>
     </AuthProvider>
   );

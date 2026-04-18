@@ -1,405 +1,562 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { useData, type Expense, type Settlement } from '../contexts/DataContext';
+import { useData } from '../contexts/DataContext';
+import { useFriends } from '../contexts/FriendsContext';
+import { useNotifications } from '../contexts/NotificationsContext';
+import AddExpenseModal from './AddExpenseModal';
+import FriendsModal from './FriendsModal';
+import NotificationsCenter from './NotificationsCenter';
 import {
-  LogOut, Plus, Activity, Users, Wallet, X, Calendar, DollarSign,
-  Tag, UserPlus, TrendingUp, TrendingDown, Edit2, Trash2, ArrowRight,
-  CreditCard, CheckCircle, AlertCircle
+  LogOut,
+  Plus,
+  Activity,
+  Users,
+  Wallet,
+  Menu,
+  DollarSign,
+  Trash2,
+  ArrowRight,
+  CheckCircle,
+  TrendingDown,
+  CreditCard,
 } from 'lucide-react';
-import toast from 'react-hot-toast';
 
 /* ════════════════════════════════════════════════════════════
-   ADD EXPENSE MODAL
+   MAIN DASHBOARD
    ════════════════════════════════════════════════════════════ */
-const AddExpenseModal: React.FC<{ open: boolean; onClose: () => void }> = ({ open, onClose }) => {
-  const { addExpense } = useData();
-  const [description, setDescription] = useState('');
-  const [amount, setAmount] = useState('');
-  const [friendName, setFriendName] = useState('');
-  const [friends, setFriends] = useState<string[]>([]);
-  const [category, setCategory] = useState('');
-  const [loading, setLoading] = useState(false);
+const Dashboard: React.FC = () => {
+  const { user, signOut } = useAuth();
+  const { expenses, balances, settlements, deleteExpense, totalSpent, myBalance } = useData();
+  const { friends, loadFriendsData, pendingRequests } = useFriends();
+  const { addNotification } = useNotifications();
+  const [showAddExpense, setShowAddExpense] = useState(false);
+  const [showFriends, setShowFriends] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
 
-  if (!open) return null;
+  useEffect(() => {
+    loadFriendsData();
+  }, [loadFriendsData]);
 
-  const handleAddFriend = () => {
-    const trimmed = friendName.trim();
-    if (trimmed && !friends.includes(trimmed)) {
-      setFriends([...friends, trimmed]);
-      setFriendName('');
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!description.trim() || !amount || friends.length === 0) {
-      toast.error('Fill all fields and add at least one friend.');
-      return;
-    }
-    setLoading(true);
-    try {
-      await addExpense(description.trim(), parseFloat(amount), friends, category || undefined);
-      toast.success('Expense added!');
-      setDescription(''); setAmount(''); setFriends([]); setCategory('');
-      onClose();
-    } catch {
-      toast.error('Failed to add expense.');
-    } finally { setLoading(false); }
+  const handleSignOut = async () => {
+    await signOut();
   };
 
   return (
-    <div style={overlayStyle} onClick={onClose}>
-      <div className="glass-card animate-fade-in" style={{ maxWidth: 480, width: '100%', position: 'relative' }} onClick={e => e.stopPropagation()}>
-        <button className="btn btn-secondary" onClick={onClose} style={{ position: 'absolute', top: 16, right: 16, padding: 6 }}><X size={18} /></button>
-        <h2 style={{ marginBottom: 24, display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Plus size={22} className="text-primary" /> New Expense
-        </h2>
-        <form onSubmit={handleSubmit}>
-          <div className="input-group">
-            <label><Tag size={14} style={{ marginRight: 4 }} />Description</label>
-            <input className="input-field" placeholder="e.g. Dinner at Marco's" value={description} onChange={e => setDescription(e.target.value)} />
-          </div>
-          <div className="input-group">
-            <label><DollarSign size={14} style={{ marginRight: 4 }} />Amount ($)</label>
-            <input className="input-field" type="number" step="0.01" min="0" placeholder="0.00" value={amount} onChange={e => setAmount(e.target.value)} />
-          </div>
-          <div className="input-group">
-            <label><CreditCard size={14} style={{ marginRight: 4 }} />Category (optional)</label>
-            <select className="input-field" value={category} onChange={e => setCategory(e.target.value)}>
-              <option value="">Select…</option>
-              <option value="food">🍔 Food & Drinks</option>
-              <option value="transport">🚗 Transport</option>
-              <option value="entertainment">🎬 Entertainment</option>
-              <option value="groceries">🛒 Groceries</option>
-              <option value="rent">🏠 Rent & Bills</option>
-              <option value="other">📦 Other</option>
-            </select>
-          </div>
-          <div className="input-group">
-            <label><UserPlus size={14} style={{ marginRight: 4 }} />Split with</label>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <input className="input-field" style={{ flex: 1 }} placeholder="Friend's name" value={friendName} onChange={e => setFriendName(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddFriend(); } }} />
-              <button type="button" className="btn btn-secondary" onClick={handleAddFriend} style={{ padding: '10px 14px' }}><Plus size={16} /></button>
+    <div
+      style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+        backgroundAttachment: 'fixed',
+      }}
+    >
+      {/* Header */}
+      <header
+        style={{
+          padding: '20px 24px',
+          background: 'white',
+          borderBottom: '1px solid #e5e7eb',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+          position: 'sticky',
+          top: 0,
+          zIndex: 40,
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            maxWidth: '1200px',
+            margin: '0 auto',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div
+              style={{
+                width: '44px',
+                height: '44px',
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                borderRadius: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)',
+              }}
+            >
+              <Wallet size={28} color="white" />
             </div>
-            {friends.length > 0 && (
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
-                {friends.map(f => (
-                  <span key={f} style={chipStyle}>
-                    {f}
-                    <button type="button" onClick={() => setFriends(friends.filter(x => x !== f))} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 0, marginLeft: 4 }}><X size={12} /></button>
-                  </span>
+            <div>
+              <h1 style={{ margin: 0, fontSize: '24px', fontWeight: '700', color: '#1f2937' }}>SplitEase</h1>
+              <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#9ca3af' }}>Split expenses effortlessly</p>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <button
+              onClick={() => setShowFriends(true)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '10px 16px',
+                background: '#f3f4f6',
+                border: '1px solid #e5e7eb',
+                borderRadius: '10px',
+                cursor: 'pointer',
+                fontWeight: '600',
+                fontSize: '14px',
+                color: '#1f2937',
+                transition: 'all 0.2s',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = '#e5e7eb';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = '#f3f4f6';
+              }}
+            >
+              <Users size={18} />
+              Friends
+            </button>
+
+            <NotificationsCenter />
+
+            <button
+              onClick={() => setShowAddExpense(true)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '10px 16px',
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                border: 'none',
+                borderRadius: '10px',
+                cursor: 'pointer',
+                fontWeight: '700',
+                fontSize: '14px',
+                color: 'white',
+                boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)',
+                transition: 'all 0.2s',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.boxShadow = '0 6px 16px rgba(102, 126, 234, 0.4)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.3)';
+              }}
+            >
+              <Plus size={18} />
+              Add Expense
+            </button>
+
+            <div style={{ position: 'relative' }}>
+              <button
+                onClick={() => setShowMenu(!showMenu)}
+                style={{
+                  padding: '10px',
+                  background: '#f3f4f6',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '10px',
+                  cursor: 'pointer',
+                  color: '#1f2937',
+                }}
+              >
+                <Menu size={18} />
+              </button>
+
+              {showMenu && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '100%',
+                    right: 0,
+                    marginTop: '8px',
+                    background: 'white',
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '10px',
+                    boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1)',
+                    zIndex: 50,
+                  }}
+                >
+                  <button
+                    onClick={() => {
+                      setShowMenu(false);
+                      handleSignOut();
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      width: '100%',
+                      padding: '12px 16px',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      color: '#dc2626',
+                      fontWeight: '600',
+                      fontSize: '14px',
+                      textAlign: 'left',
+                      transition: 'background 0.2s',
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = '#fee2e2')}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = 'none')}
+                  >
+                    <LogOut size={16} />
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '32px 24px' }}>
+        {/* Stats Cards */}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+            gap: '20px',
+            marginBottom: '32px',
+          }}
+        >
+          {/* Total Spent */}
+          <div
+            style={{
+              background: 'white',
+              borderRadius: '16px',
+              padding: '24px',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
+              border: '1px solid #e5e7eb',
+              transition: 'all 0.3s',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                justifyContent: 'space-between',
+                marginBottom: '16px',
+              }}
+            >
+              <div>
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: '12px',
+                    color: '#9ca3af',
+                    fontWeight: '600',
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  Total Spent
+                </p>
+              </div>
+              <div
+                style={{
+                  width: '44px',
+                  height: '44px',
+                  background: '#fef3c7',
+                  borderRadius: '10px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <CreditCard size={24} color="#f59e0b" />
+              </div>
+            </div>
+            <p style={{ margin: 0, fontSize: '32px', fontWeight: '700', color: '#1f2937' }}>${totalSpent.toFixed(2)}</p>
+            <p style={{ margin: '8px 0 0', fontSize: '12px', color: '#10b981' }}>
+              <TrendingDown size={14} style={{ display: 'inline', marginRight: '4px' }} />
+              across {expenses.length} expenses
+            </p>
+          </div>
+
+          {/* Your Balance */}
+          <div
+            style={{
+              background: 'white',
+              borderRadius: '16px',
+              padding: '24px',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
+              border: '1px solid #e5e7eb',
+              transition: 'all 0.3s',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                justifyContent: 'space-between',
+                marginBottom: '16px',
+              }}
+            >
+              <div>
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: '12px',
+                    color: '#9ca3af',
+                    fontWeight: '600',
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  Your Balance
+                </p>
+              </div>
+              <div
+                style={{
+                  width: '44px',
+                  height: '44px',
+                  background: myBalance >= 0 ? '#dcfce7' : '#fee2e2',
+                  borderRadius: '10px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Wallet size={24} color={myBalance >= 0 ? '#16a34a' : '#dc2626'} />
+              </div>
+            </div>
+            <p
+              style={{ margin: 0, fontSize: '32px', fontWeight: '700', color: myBalance >= 0 ? '#16a34a' : '#dc2626' }}
+            >
+              {myBalance >= 0 ? '+' : '-'}${Math.abs(myBalance).toFixed(2)}
+            </p>
+            <p style={{ margin: '8px 0 0', fontSize: '12px', color: '#6b7280' }}>
+              {myBalance >= 0 ? '✓ You are owed money' : '⚠️ You owe money'}
+            </p>
+          </div>
+
+          {/* Friends Count */}
+          <div
+            style={{
+              background: 'white',
+              borderRadius: '16px',
+              padding: '24px',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
+              border: '1px solid #e5e7eb',
+              transition: 'all 0.3s',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                justifyContent: 'space-between',
+                marginBottom: '16px',
+              }}
+            >
+              <div>
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: '12px',
+                    color: '#9ca3af',
+                    fontWeight: '600',
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  Active Friends
+                </p>
+              </div>
+              <div
+                style={{
+                  width: '44px',
+                  height: '44px',
+                  background: '#dbeafe',
+                  borderRadius: '10px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Users size={24} color="#3b82f6" />
+              </div>
+            </div>
+            <p style={{ margin: 0, fontSize: '32px', fontWeight: '700', color: '#1f2937' }}>{friends.length}</p>
+            <p style={{ margin: '8px 0 0', fontSize: '12px', color: '#6b7280' }}>in your group</p>
+          </div>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
+          {/* Expenses Section */}
+          <div
+            style={{
+              background: 'white',
+              borderRadius: '16px',
+              padding: '24px',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
+              border: '1px solid #e5e7eb',
+            }}
+          >
+            <h2
+              style={{
+                margin: '0 0 20px',
+                fontSize: '18px',
+                fontWeight: '700',
+                color: '#1f2937',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+              }}
+            >
+              <Activity size={20} color="#667eea" />
+              Recent Expenses
+            </h2>
+
+            {expenses.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '32px 16px', color: '#9ca3af' }}>
+                <DollarSign size={48} style={{ opacity: 0.3, margin: '0 auto 12px' }} />
+                <p style={{ margin: 0, fontSize: '14px' }}>No expenses yet. Add one to get started!</p>
+              </div>
+            ) : (
+              <div
+                style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '400px', overflow: 'auto' }}
+              >
+                {expenses
+                  .slice()
+                  .reverse()
+                  .map((expense) => (
+                    <div
+                      key={expense.id}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '12px',
+                        background: '#f9fafb',
+                        borderRadius: '10px',
+                        border: '1px solid #e5e7eb',
+                        transition: 'all 0.2s',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = '#f3f4f6';
+                        e.currentTarget.style.transform = 'translateX(4px)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = '#f9fafb';
+                        e.currentTarget.style.transform = 'translateX(0)';
+                      }}
+                    >
+                      <div style={{ flex: 1 }}>
+                        <p style={{ margin: 0, fontWeight: '600', color: '#1f2937', fontSize: '14px' }}>
+                          {expense.description}
+                        </p>
+                        <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#9ca3af' }}>
+                          paid by {expense.paidByName}
+                        </p>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <p style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: '#667eea' }}>
+                          ${expense.amount.toFixed(2)}
+                        </p>
+                        <button
+                          onClick={() => deleteExpense(expense.id)}
+                          style={{
+                            padding: '6px',
+                            background: '#fee2e2',
+                            border: 'none',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                            color: '#dc2626',
+                            transition: 'all 0.2s',
+                          }}
+                          onMouseEnter={(e) => (e.currentTarget.style.background = '#fecaca')}
+                          onMouseLeave={(e) => (e.currentTarget.style.background = '#fee2e2')}
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            )}
+          </div>
+
+          {/* Settlements Section */}
+          <div
+            style={{
+              background: 'white',
+              borderRadius: '16px',
+              padding: '24px',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
+              border: '1px solid #e5e7eb',
+            }}
+          >
+            <h2
+              style={{
+                margin: '0 0 20px',
+                fontSize: '18px',
+                fontWeight: '700',
+                color: '#1f2937',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+              }}
+            >
+              <ArrowRight size={20} color="#10b981" />
+              Settlements
+            </h2>
+
+            {settlements.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '32px 16px', color: '#9ca3af' }}>
+                <CheckCircle size={48} style={{ opacity: 0.3, margin: '0 auto 12px', color: '#10b981' }} />
+                <p style={{ margin: 0, fontSize: '14px' }}>All settled! 🎉</p>
+              </div>
+            ) : (
+              <div
+                style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '400px', overflow: 'auto' }}
+              >
+                {settlements.map((settlement, idx) => (
+                  <div
+                    key={idx}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      padding: '12px',
+                      background: '#fef3c7',
+                      borderRadius: '10px',
+                      border: '1px solid #fcd34d',
+                    }}
+                  >
+                    <div style={{ flex: 1 }}>
+                      <p style={{ margin: 0, fontWeight: '600', color: '#1f2937', fontSize: '14px' }}>
+                        {settlement.fromName} → {settlement.toName}
+                      </p>
+                      <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#92400e' }}>Transfer funds to settle</p>
+                    </div>
+                    <p style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: '#f59e0b' }}>
+                      ${settlement.amount.toFixed(2)}
+                    </p>
+                  </div>
                 ))}
               </div>
             )}
           </div>
-          <button className="btn btn-primary" type="submit" style={{ width: '100%', marginTop: 8, padding: 14 }} disabled={loading}>
-            {loading ? 'Adding…' : 'Add Expense'}
-          </button>
-        </form>
-      </div>
-    </div>
-  );
-};
-
-/* ════════════════════════════════════════════════════════════
-   EDIT EXPENSE MODAL
-   ════════════════════════════════════════════════════════════ */
-const EditExpenseModal: React.FC<{ expense: Expense | null; onClose: () => void }> = ({ expense, onClose }) => {
-  const { updateExpense, deleteExpense } = useData();
-  const [description, setDescription] = useState(expense?.description || '');
-  const [amount, setAmount] = useState(expense?.amount.toString() || '');
-  const [loading, setLoading] = useState(false);
-
-  if (!expense) return null;
-
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!description.trim() || !amount) { toast.error('Fill all fields.'); return; }
-    setLoading(true);
-    try {
-      await updateExpense(expense.id, description.trim(), parseFloat(amount));
-      toast.success('Expense updated!');
-      onClose();
-    } catch { toast.error('Update failed.'); }
-    finally { setLoading(false); }
-  };
-
-  const handleDelete = async () => {
-    if (!confirm('Delete this expense?')) return;
-    try {
-      await deleteExpense(expense.id);
-      toast.success('Expense deleted.');
-      onClose();
-    } catch { toast.error('Delete failed.'); }
-  };
-
-  return (
-    <div style={overlayStyle} onClick={onClose}>
-      <div className="glass-card animate-fade-in" style={{ maxWidth: 420, width: '100%', position: 'relative' }} onClick={e => e.stopPropagation()}>
-        <button className="btn btn-secondary" onClick={onClose} style={{ position: 'absolute', top: 16, right: 16, padding: 6 }}><X size={18} /></button>
-        <h2 style={{ marginBottom: 24, display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Edit2 size={20} className="text-primary" /> Edit Expense
-        </h2>
-        <form onSubmit={handleSave}>
-          <div className="input-group">
-            <label>Description</label>
-            <input className="input-field" value={description} onChange={e => setDescription(e.target.value)} />
-          </div>
-          <div className="input-group">
-            <label>Amount ($)</label>
-            <input className="input-field" type="number" step="0.01" min="0" value={amount} onChange={e => setAmount(e.target.value)} />
-          </div>
-          <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
-            <button className="btn btn-primary" type="submit" style={{ flex: 1, padding: 14 }} disabled={loading}>
-              {loading ? 'Saving…' : 'Save Changes'}
-            </button>
-            <button className="btn btn-danger" type="button" onClick={handleDelete} style={{ padding: '14px 18px' }}>
-              <Trash2 size={18} />
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-};
-
-/* ════════════════════════════════════════════════════════════
-   EXPENSE LIST ITEM
-   ════════════════════════════════════════════════════════════ */
-const categoryEmoji: Record<string, string> = {
-  food: '🍔', transport: '🚗', entertainment: '🎬',
-  groceries: '🛒', rent: '🏠', other: '📦'
-};
-
-const ExpenseItem: React.FC<{ expense: Expense; onEdit: () => void }> = ({ expense, onEdit }) => {
-  const d = expense.date as any;
-  const dateStr = d instanceof Date
-    ? d.toLocaleDateString()
-    : d?.toDate
-      ? d.toDate().toLocaleDateString()
-      : 'Just now';
-  const perPerson = (expense.amount / expense.splitWithNames.length).toFixed(2);
-  const emoji = categoryEmoji[expense.category || ''] || '💰';
-
-  return (
-    <div className="expense-item" style={{ cursor: 'pointer' }} onClick={onEdit}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <div style={{ fontSize: '1.5rem', width: 40, textAlign: 'center' }}>{emoji}</div>
-        <div className="expense-details">
-          <span style={{ fontWeight: 600 }}>{expense.description}</span>
-          <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 4 }}>
-            <Calendar size={12} /> {dateStr} · Paid by {expense.paidByName} · {expense.splitWithNames.length} people · ${perPerson}/each
-          </span>
-        </div>
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <span className="expense-amount text-accent">${expense.amount.toFixed(2)}</span>
-        <Edit2 size={14} style={{ color: 'var(--text-muted)' }} />
-      </div>
-    </div>
-  );
-};
-
-/* ════════════════════════════════════════════════════════════
-   SETTLEMENT ITEM
-   ════════════════════════════════════════════════════════════ */
-const SettlementItem: React.FC<{ settlement: Settlement }> = ({ settlement }) => (
-  <div className="expense-item">
-    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-      <div className="avatar" style={{ width: 32, height: 32, fontSize: '0.75rem' }}>
-        {settlement.fromName.charAt(0)}
-      </div>
-      <span style={{ fontWeight: 500 }}>{settlement.fromName}</span>
-      <ArrowRight size={16} className="text-primary" />
-      <div className="avatar" style={{ width: 32, height: 32, fontSize: '0.75rem', background: 'linear-gradient(135deg, var(--accent), #059669)' }}>
-        {settlement.toName.charAt(0)}
-      </div>
-      <span style={{ fontWeight: 500 }}>{settlement.toName}</span>
-    </div>
-    <span className="text-accent" style={{ fontWeight: 600, fontSize: '1.05rem' }}>${settlement.amount.toFixed(2)}</span>
-  </div>
-);
-
-/* ════════════════════════════════════════════════════════════
-   BALANCE ITEM
-   ════════════════════════════════════════════════════════════ */
-const BalanceItem: React.FC<{ name: string; balance: number }> = ({ name, balance }) => {
-  const isPositive = balance >= 0;
-  return (
-    <div className="expense-item">
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <div className="avatar" style={{ width: 36, height: 36, fontSize: '0.85rem' }}>{name.charAt(0)}</div>
-        <span style={{ fontWeight: 500 }}>{name}</span>
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-        {isPositive ? <TrendingUp size={16} className="text-accent" /> : <TrendingDown size={16} className="text-danger" />}
-        <span className={isPositive ? 'text-accent' : 'text-danger'} style={{ fontWeight: 600, fontSize: '1.1rem' }}>
-          {isPositive ? '+' : '-'}${Math.abs(balance).toFixed(2)}
-        </span>
-      </div>
-    </div>
-  );
-};
-
-/* ════════════════════════════════════════════════════════════
-   DASHBOARD
-   ════════════════════════════════════════════════════════════ */
-const Dashboard: React.FC = () => {
-  const { user, signOut } = useAuth();
-  const { expenses, balances, settlements, totalSpent, myBalance } = useData();
-  const [addOpen, setAddOpen] = useState(false);
-  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
-
-  const friendBalances = balances.filter(b => b.userName !== 'You');
-  const allSettled = settlements.length === 0 && expenses.length > 0;
-
-  return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      {/* ─── Navbar ─── */}
-      <nav className="nav-bar">
-        <div className="logo">
-          <Wallet size={24} />
-          SplitEase
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>{user?.displayName || 'User'}</span>
-          {user?.photoURL ? (
-            <img src={user.photoURL} alt="Avatar" className="avatar" style={{ objectFit: 'cover' }} />
-          ) : (
-            <div className="avatar">{(user?.displayName || 'U').charAt(0)}</div>
-          )}
-          <button className="btn btn-secondary" onClick={signOut} style={{ padding: '8px 12px' }} title="Sign out"><LogOut size={16} /></button>
-        </div>
-      </nav>
-
-      {/* ─── Main ─── */}
-      <main className="container" style={{ flex: 1 }}>
-        {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32, flexWrap: 'wrap', gap: 16 }}>
-          <div>
-            <h1 className="animate-fade-in" style={{ fontSize: '2rem' }}>Overview</h1>
-            <p className="animate-fade-in" style={{ animationDelay: '0.1s' }}>Track your shared expenses and balances.</p>
-          </div>
-          <button className="btn btn-primary animate-fade-in" style={{ animationDelay: '0.15s' }} onClick={() => setAddOpen(true)}>
-            <Plus size={20} /> Add Expense
-          </button>
-        </div>
-
-        {/* ─── Summary Cards ─── */}
-        <div className="grid-2" style={{ marginBottom: 32 }}>
-          {/* Total Spent */}
-          <div className="glass-card animate-fade-in" style={{ animationDelay: '0.2s' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-              <div style={{ background: 'rgba(16, 185, 129, 0.15)', padding: 12, borderRadius: 12 }}>
-                <Activity size={24} className="text-accent" />
-              </div>
-              <h3 style={{ margin: 0 }}>Total Spent</h3>
-            </div>
-            <div style={{ fontSize: '2.5rem', fontWeight: 700 }}>${totalSpent.toFixed(2)}</div>
-            <p style={{ fontSize: '0.85rem', marginTop: 8 }}>{expenses.length} expense{expenses.length !== 1 ? 's' : ''} recorded</p>
-          </div>
-
-          {/* Your Balance */}
-          <div className="glass-card animate-fade-in" style={{ animationDelay: '0.3s' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-              <div style={{ background: 'rgba(59, 130, 246, 0.15)', padding: 12, borderRadius: 12 }}>
-                <DollarSign size={24} className="text-primary" />
-              </div>
-              <h3 style={{ margin: 0 }}>Your Balance</h3>
-            </div>
-            <div style={{ fontSize: '2.5rem', fontWeight: 700, color: myBalance >= 0 ? 'var(--accent)' : 'var(--danger)' }}>
-              {myBalance >= 0 ? '+' : '-'}${Math.abs(myBalance).toFixed(2)}
-            </div>
-            <p style={{ fontSize: '0.85rem', marginTop: 8 }}>
-              {myBalance === 0 && expenses.length === 0 ? 'Add expenses to start tracking' : myBalance === 0 ? "You're all settled!" : myBalance > 0 ? 'Friends owe you' : 'You owe friends'}
-            </p>
-          </div>
-        </div>
-
-        {/* ─── Suggested Settlements ─── */}
-        {(settlements.length > 0 || allSettled) && (
-          <div className="glass-card animate-fade-in" style={{ animationDelay: '0.35s', marginBottom: 32 }}>
-            <h3 style={{ marginBottom: 20, display: 'flex', alignItems: 'center', gap: 8 }}>
-              {allSettled ? <CheckCircle size={20} className="text-accent" /> : <AlertCircle size={20} style={{ color: '#f59e0b' }} />}
-              {allSettled ? 'All Settled Up!' : 'Suggested Settlements'}
-            </h3>
-            {allSettled ? (
-              <p>Everyone is even. No payments needed! 🎉</p>
-            ) : (
-              <div className="expense-list">
-                {settlements.map((s, i) => <SettlementItem key={i} settlement={s} />)}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* ─── Content Grid ─── */}
-        <div className="grid-2">
-          {/* Recent Expenses */}
-          <div className="glass-card animate-fade-in" style={{ animationDelay: '0.4s' }}>
-            <h3 style={{ marginBottom: 20, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Activity size={20} className="text-primary" />
-              Recent Expenses
-            </h3>
-            <div className="expense-list">
-              {expenses.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
-                  <DollarSign size={32} style={{ marginBottom: 8, opacity: 0.3 }} /><br />
-                  No expenses yet. Add one to get started!
-                </div>
-              ) : (
-                expenses.slice(0, 10).map(exp => (
-                  <ExpenseItem key={exp.id} expense={exp} onEdit={() => setEditingExpense(exp)} />
-                ))
-              )}
-            </div>
-          </div>
-
-          {/* Friend Balances */}
-          <div className="glass-card animate-fade-in" style={{ animationDelay: '0.5s' }}>
-            <h3 style={{ marginBottom: 20, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Users size={20} style={{ color: 'var(--secondary)' }} />
-              Friend Balances
-            </h3>
-            <div className="expense-list">
-              {friendBalances.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
-                  <Users size={32} style={{ marginBottom: 8, opacity: 0.3 }} /><br />
-                  Add expenses with friends to see balances.
-                </div>
-              ) : (
-                friendBalances.map(b => <BalanceItem key={b.userId} name={b.userName} balance={b.balance} />)
-              )}
-            </div>
-          </div>
         </div>
       </main>
 
-      {/* ─── Footer ─── */}
-      <footer style={{ textAlign: 'center', padding: 24, color: 'var(--text-muted)', fontSize: '0.8rem' }}>
-        SplitEase &copy; {new Date().getFullYear()} &mdash; Built for students, by students
-      </footer>
+      {/* Modals */}
+      <AddExpenseModal open={showAddExpense} onClose={() => setShowAddExpense(false)} friends={friends} />
+      <FriendsModal open={showFriends} onClose={() => setShowFriends(false)} />
 
-      {/* ─── Modals ─── */}
-      <AddExpenseModal open={addOpen} onClose={() => setAddOpen(false)} />
-      <EditExpenseModal expense={editingExpense} onClose={() => setEditingExpense(null)} />
+      <style>{`
+        @keyframes slideUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
     </div>
   );
-};
-
-/* ────────── Shared Inline Styles ────────── */
-const overlayStyle: React.CSSProperties = {
-  position: 'fixed', inset: 0,
-  background: 'rgba(0,0,0,0.6)',
-  backdropFilter: 'blur(6px)',
-  display: 'flex', alignItems: 'center', justifyContent: 'center',
-  zIndex: 200, padding: 24,
-};
-
-const chipStyle: React.CSSProperties = {
-  display: 'inline-flex', alignItems: 'center', gap: 4,
-  background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.3)',
-  borderRadius: 999, padding: '4px 12px', fontSize: '0.85rem', color: '#93c5fd',
 };
 
 export default Dashboard;
