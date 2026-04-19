@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useFriends } from '../contexts/FriendsContext';
-import { Users, Mail, Send, CheckCircle, X, UserMinus, ArrowRight } from 'lucide-react';
+import { Users, Send, CheckCircle, X, UserMinus, ArrowRight, AlertCircle, AtSign, Clock, UserCheck } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface FriendsModalProps {
@@ -10,462 +10,227 @@ interface FriendsModalProps {
 
 const FriendsModal: React.FC<FriendsModalProps> = ({ open, onClose }) => {
   const {
-    friends,
-    pendingRequests,
-    sentRequests,
-    sendFriendRequest,
-    acceptFriendRequest,
-    rejectFriendRequest,
-    removeFriend,
-    loadFriendsData,
-    getFriendByEmail,
+    friends, pendingRequests, sentRequests,
+    sendFriendRequest, acceptFriendRequest, rejectFriendRequest,
+    removeFriend, getFriendByUsername,
   } = useFriends();
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(false);
-  const [emailStatus, setEmailStatus] = useState<'idle' | 'checking' | 'found' | 'not-found'>('idle');
-  const [foundName, setFoundName] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'friends' | 'incoming' | 'outgoing'>('friends');
+  const [usernameStatus, setUsernameStatus] = useState<'idle' | 'checking' | 'found' | 'not-found'>('idle');
+  const [foundUser, setFoundUser] = useState<{ displayName: string; email: string; username: string } | null>(null);
 
   useEffect(() => {
-    if (open) {
-      loadFriendsData();
-    }
-  }, [open, loadFriendsData]);
-
-  useEffect(() => {
-    if (!email.trim() || !email.includes('@') || !email.includes('.')) {
-      setEmailStatus('idle');
-      setFoundName(null);
+    if (!username.trim() || username.length < 3) {
+      setUsernameStatus('idle');
+      setFoundUser(null);
       return;
     }
 
-    setEmailStatus('checking');
-
-    // Debounce the search
+    setUsernameStatus('checking');
     const timeOutId = setTimeout(async () => {
       try {
-        const friend = await getFriendByEmail(email.trim());
+        const friend = await getFriendByUsername(username.trim().toLowerCase());
         if (friend) {
-          setEmailStatus('found');
-          setFoundName(friend.displayName);
+          setUsernameStatus('found');
+          setFoundUser({ displayName: friend.displayName, email: friend.email, username: friend.username });
         } else {
-          setEmailStatus('not-found');
-          setFoundName(null);
+          setUsernameStatus('not-found');
+          setFoundUser(null);
         }
-      } catch (error) {
-        setEmailStatus('idle');
+      } catch {
+        setUsernameStatus('idle');
       }
     }, 500);
 
     return () => clearTimeout(timeOutId);
-  }, [email, getFriendByEmail]);
+  }, [username, getFriendByUsername]);
 
   const handleSendRequest = async () => {
-    if (!email.trim()) {
-      toast.error('Please enter an email');
+    if (!username.trim()) {
+      toast.error('Please enter a username');
+      return;
+    }
+    if (usernameStatus !== 'found') {
+      toast.error('User not found. Check the username.');
       return;
     }
     setLoading(true);
     try {
-      await sendFriendRequest(email.trim());
-      setEmail('');
+      await sendFriendRequest(username.trim().toLowerCase());
+      setUsername('');
+      setUsernameStatus('idle');
+      setFoundUser(null);
     } finally {
       setLoading(false);
     }
   };
 
+  const getInitials = (name: string) => name.slice(0, 2).toUpperCase();
+
   if (!open) return null;
+
+  const tabs = [
+    { id: 'friends' as const, label: 'Friends', count: friends.length, icon: <Users size={15} /> },
+    { id: 'incoming' as const, label: 'Incoming', count: pendingRequests.length, icon: <Clock size={15} /> },
+    { id: 'outgoing' as const, label: 'Outgoing', count: sentRequests.length, icon: <ArrowRight size={15} /> },
+  ];
 
   return (
     <div
       style={{
-        position: 'fixed',
-        inset: 0,
-        background: 'rgba(0, 0, 0, 0.5)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 50,
-        padding: '16px',
+        position: 'fixed', inset: 0, background: 'var(--bg-overlay)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        zIndex: 200, padding: '20px', backdropFilter: 'blur(4px)',
+        animation: 'fadeIn 0.3s ease-out'
       }}
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div
-        style={{
-          background: 'white',
-          borderRadius: '16px',
-          maxWidth: '500px',
-          width: '100%',
-          maxHeight: '80vh',
-          overflow: 'auto',
-          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
-          animation: 'slideUp 0.3s ease-out',
-        }}
-      >
+      <div className="glass animate-entrance" style={{
+        maxWidth: '560px', width: '100%', borderRadius: 'var(--radius-xl)',
+        overflow: 'hidden', boxShadow: 'var(--shadow-xl)', border: '1px solid var(--border)',
+        display: 'flex', flexDirection: 'column', position: 'relative'
+      }}>
         {/* Header */}
-        <div
-          style={{
-            padding: '20px',
-            borderBottom: '1px solid #e5e7eb',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div
-              style={{
-                width: '40px',
-                height: '40px',
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                borderRadius: '10px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Users size={24} color="white" />
+        <div style={{ padding: '32px 32px 20px', position: 'relative', borderBottom: '1px solid var(--border-subtle)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ width: '40px', height: '40px', background: 'var(--accent-gradient)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px var(--accent-glow)' }}>
+                <Users size={20} color="white" />
+              </div>
+              <h2 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 800 }}>Inner Circle</h2>
             </div>
-            <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '700', color: '#1f2937' }}>Friends</h2>
+            <button onClick={onClose} className="icon-btn" style={{ background: 'transparent', border: 'none' }}><X size={20} /></button>
           </div>
-          <button
-            onClick={onClose}
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              color: '#9ca3af',
-              fontSize: '24px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            ✕
-          </button>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0 }}>Manage your connections and split expenses easily.</p>
         </div>
 
-        <div style={{ padding: '20px' }}>
-          {/* Add Friend Section */}
-          <div style={{ marginBottom: '24px' }}>
-            <h3 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '12px', color: '#374151' }}>
-              Add a Friend
-            </h3>
-            <div style={{ display: 'flex', gap: '8px' }}>
+        {/* Content */}
+        <div style={{ padding: '32px', overflowY: 'auto', flex: 1 }}>
+          {/* Add Friend Input */}
+          <div style={{ marginBottom: '32px' }}>
+            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '12px', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Add by Username</label>
+            <div style={{ display: 'flex', gap: '12px' }}>
               <div style={{ position: 'relative', flex: 1 }}>
-                <Mail
-                  size={18}
-                  style={{
-                    position: 'absolute',
-                    left: '12px',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    color: '#9ca3af',
-                  }}
-                />
+                <AtSign size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                 <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="friend@example.com"
-                  style={{
-                    width: '100%',
-                    padding: '10px 12px 10px 40px',
-                    border: '1px solid #e5e7eb',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    boxSizing: 'border-box',
-                    outline: 'none',
+                  type="text" value={username}
+                  onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+                  placeholder="enter_username" className="input-field"
+                  style={{ 
+                    paddingLeft: '48px', height: '52px', fontSize: '1rem',
+                    borderColor: usernameStatus === 'found' ? 'var(--success)' : usernameStatus === 'not-found' ? 'var(--warning)' : 'var(--border)'
                   }}
-                  onFocus={(e) => (e.currentTarget.style.borderColor = '#667eea')}
-                  onBlur={(e) => (e.currentTarget.style.borderColor = '#e5e7eb')}
+                  onKeyDown={(e) => { if (e.key === 'Enter' && usernameStatus === 'found') handleSendRequest(); }}
                 />
+                {usernameStatus === 'checking' && (
+                  <div style={{ position: 'absolute', right: '16px', top: '50%', transform: 'translateY(-50%)' }}>
+                    <div className="spinner" style={{ width: '18px', height: '18px' }} />
+                  </div>
+                )}
               </div>
               <button
-                onClick={handleSendRequest}
-                disabled={loading || emailStatus === 'checking'}
-                style={{
-                  padding: '10px 16px',
-                  background: loading ? '#cbd5e1' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  cursor: loading ? 'not-allowed' : 'pointer',
-                  fontWeight: '600',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  fontSize: '14px',
-                  whiteSpace: 'nowrap',
-                }}
+                onClick={handleSendRequest} disabled={loading || usernameStatus !== 'found'}
+                className="btn btn-primary" style={{ height: '52px', padding: '0 24px' }}
               >
-                <Send size={16} />
-                {loading ? 'Sending...' : 'Send'}
+                {loading ? '...' : <Send size={18} />}
               </button>
             </div>
-
-            {/* Real-time Status Indicator */}
-            {emailStatus === 'checking' && (
-              <span
-                style={{
-                  fontSize: '13px',
-                  color: '#6b7280',
-                  marginTop: '8px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                }}
-              >
-                <div
-                  style={{
-                    width: '12px',
-                    height: '12px',
-                    border: '2px solid #cbd5e1',
-                    borderTopColor: '#667eea',
-                    borderRadius: '50%',
-                    animation: 'spin 1s linear infinite',
-                  }}
-                />
-                Checking user...
-              </span>
-            )}
-            {emailStatus === 'found' && (
-              <span
-                style={{
-                  fontSize: '13px',
-                  color: '#10b981',
-                  marginTop: '8px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  fontWeight: '500',
-                }}
-              >
-                <CheckCircle size={14} /> ✓ {foundName} is already on SplitEase!
-              </span>
-            )}
-            {emailStatus === 'not-found' && (
-              <span
-                style={{
-                  fontSize: '13px',
-                  color: '#f59e0b',
-                  marginTop: '8px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  fontWeight: '500',
-                }}
-              >
-                <Mail size={14} /> User will receive an email invite to join.
-              </span>
+            {usernameStatus === 'found' && foundUser && (
+              <div className="animate-slide-down" style={{ marginTop: '12px', padding: '12px 16px', background: 'var(--success-bg)', color: 'var(--success)', borderRadius: 'var(--radius-md)', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <CheckCircle size={16} /> User Found: {foundUser.displayName} (@{foundUser.username})
+              </div>
             )}
           </div>
 
-          {/* Tabs */}
-          <div style={{ borderBottom: '1px solid #e5e7eb', marginBottom: '16px' }}>
-            <div style={{ display: 'flex', gap: '24px' }}>
+          {/* Premium Tabs */}
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', background: 'var(--bg-elevated)', padding: '6px', borderRadius: 'var(--radius-md)' }}>
+            {tabs.map(tab => (
               <button
+                key={tab.id} onClick={() => setActiveTab(tab.id)}
                 style={{
-                  padding: '12px 0',
-                  background: 'none',
-                  border: 'none',
-                  borderBottom: '2px solid #667eea',
-                  color: '#667eea',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  fontSize: '14px',
+                  flex: 1, padding: '12px', border: 'none', borderRadius: 'var(--radius-sm)',
+                  background: activeTab === tab.id ? 'var(--bg-card)' : 'transparent',
+                  color: activeTab === tab.id ? 'var(--accent-1)' : 'var(--text-muted)',
+                  fontWeight: 700, cursor: 'pointer', transition: 'all 0.3s',
+                  fontSize: '0.8rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                  boxShadow: activeTab === tab.id ? 'var(--shadow-sm)' : 'none'
                 }}
               >
-                Friends ({friends.length})
+                {tab.icon} {tab.label}
+                {tab.count > 0 && <span style={{ background: 'var(--accent-1)', color: 'white', padding: '2px 8px', borderRadius: 'var(--radius-full)', fontSize: '0.7rem' }}>{tab.count}</span>}
               </button>
-            </div>
+            ))}
           </div>
 
-          {/* Friends List */}
-          {friends.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '32px 16px', color: '#9ca3af' }}>
-              <Users size={48} style={{ opacity: 0.3, margin: '0 auto 12px' }} />
-              <p style={{ margin: 0, fontSize: '14px' }}>No friends yet. Add one to get started!</p>
-            </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {friends.map((friend) => (
-                <div
-                  key={friend.uid}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '12px',
-                    background: '#f9fafb',
-                    borderRadius: '10px',
-                    border: '1px solid #e5e7eb',
-                  }}
-                >
-                  <div>
-                    <p style={{ margin: 0, fontWeight: '600', color: '#1f2937' }}>{friend.displayName}</p>
-                    <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#9ca3af' }}>{friend.email}</p>
-                  </div>
-                  <button
-                    onClick={() => removeFriend(friend.uid)}
-                    style={{
-                      padding: '6px 12px',
-                      background: '#fee2e2',
-                      color: '#dc2626',
-                      border: 'none',
-                      borderRadius: '6px',
-                      cursor: 'pointer',
-                      fontWeight: '600',
-                      fontSize: '12px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                    }}
-                  >
-                    <UserMinus size={14} />
-                    Remove
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Pending Requests */}
-          {pendingRequests.length > 0 && (
-            <>
-              <h3
-                style={{
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  marginTop: '24px',
-                  marginBottom: '12px',
-                  color: '#374151',
-                }}
-              >
-                Friend Requests ({pendingRequests.length})
-              </h3>
+          {/* Tab Content */}
+          <div style={{ minHeight: '200px' }}>
+            {activeTab === 'friends' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {pendingRequests.map((request) => (
-                  <div
-                    key={request.id}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      padding: '12px',
-                      background: '#fef3c7',
-                      borderRadius: '10px',
-                      border: '1px solid #fcd34d',
-                    }}
-                  >
-                    <div>
-                      <p style={{ margin: 0, fontWeight: '600', color: '#1f2937' }}>{request.fromName}</p>
-                      <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#9ca3af' }}>{request.fromEmail}</p>
+                {friends.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '40px 0', opacity: 0.5 }}>
+                    <Users size={48} style={{ marginBottom: '16px' }} />
+                    <p>No friends in your circle yet.</p>
+                  </div>
+                ) : (
+                  friends.map((friend) => (
+                    <div key={friend.uid} className="glass card-hover" style={{ padding: '16px', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                        <div className="avatar avatar-md">{friend.username[0]}</div>
+                        <div>
+                          <p style={{ margin: 0, fontWeight: 700, fontSize: '0.9rem' }}>{friend.displayName}</p>
+                          <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)' }}>@{friend.username}</p>
+                        </div>
+                      </div>
+                      <button onClick={() => removeFriend(friend.uid)} className="icon-btn" style={{ background: 'var(--error-bg)', color: 'var(--error)' }}><UserMinus size={16} /></button>
                     </div>
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      <button
-                        onClick={() => acceptFriendRequest(request.from)}
-                        style={{
-                          padding: '6px 12px',
-                          background: '#dcfce7',
-                          color: '#16a34a',
-                          border: 'none',
-                          borderRadius: '6px',
-                          cursor: 'pointer',
-                          fontWeight: '600',
-                          fontSize: '12px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '4px',
-                        }}
-                      >
-                        <CheckCircle size={14} />
-                        Accept
-                      </button>
-                      <button
-                        onClick={() => rejectFriendRequest(request.from)}
-                        style={{
-                          padding: '6px 12px',
-                          background: '#fee2e2',
-                          color: '#dc2626',
-                          border: 'none',
-                          borderRadius: '6px',
-                          cursor: 'pointer',
-                          fontWeight: '600',
-                          fontSize: '12px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '4px',
-                        }}
-                      >
-                        <X size={14} />
-                        Reject
-                      </button>
+                  ))
+                )}
+              </div>
+            )}
+
+            {activeTab === 'incoming' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {pendingRequests.map((req) => (
+                  <div key={req.uid} className="glass" style={{ padding: '16px', borderRadius: 'var(--radius-md)', background: 'var(--warning-bg)', border: '1px solid var(--warning-border)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div className="avatar avatar-md">{req.username[0]}</div>
+                        <div>
+                          <p style={{ margin: 0, fontWeight: 700, fontSize: '0.9rem' }}>{req.displayName}</p>
+                          <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)' }}>@{req.username}</p>
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button onClick={() => acceptFriendRequest(req.uid)} className="icon-btn" style={{ background: 'var(--success)', color: 'white' }}><CheckCircle size={16} /></button>
+                        <button onClick={() => rejectFriendRequest(req.uid)} className="icon-btn" style={{ background: 'var(--error)', color: 'white' }}><X size={16} /></button>
+                      </div>
                     </div>
                   </div>
                 ))}
+                {pendingRequests.length === 0 && <p style={{ textAlign: 'center', padding: '40px 0', opacity: 0.5 }}>No pending invites.</p>}
               </div>
-            </>
-          )}
+            )}
 
-          {/* Sent Requests */}
-          {sentRequests.length > 0 && (
-            <>
-              <h3
-                style={{
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  marginTop: '24px',
-                  marginBottom: '12px',
-                  color: '#374151',
-                }}
-              >
-                Sent Requests ({sentRequests.length})
-              </h3>
+            {activeTab === 'outgoing' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {sentRequests.map((request) => (
-                  <div
-                    key={request.id}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      padding: '12px',
-                      background: '#eff6ff',
-                      borderRadius: '10px',
-                      border: '1px solid #bfdbfe',
-                    }}
-                  >
-                    <div>
-                      <p style={{ margin: 0, fontWeight: '600', color: '#1f2937' }}>
-                        {request.toName || request.toEmail}
-                      </p>
-                      <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#9ca3af' }}>Pending...</p>
+                {sentRequests.map((req) => (
+                  <div key={req.uid} className="glass" style={{ padding: '16px', borderRadius: 'var(--radius-md)', opacity: 0.8 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div className="avatar avatar-md">{req.username[0]}</div>
+                        <p style={{ margin: 0, fontWeight: 700 }}>@{req.username}</p>
+                      </div>
+                      <span className="badge">Pending</span>
                     </div>
-                    <ArrowRight size={18} color="#9ca3af" />
                   </div>
                 ))}
+                {sentRequests.length === 0 && <p style={{ textAlign: 'center', padding: '40px 0', opacity: 0.5 }}>No requests sent.</p>}
               </div>
-            </>
-          )}
+            )}
+          </div>
         </div>
       </div>
-
-      <style>{`
-        @keyframes slideUp {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        @keyframes spin {
-          to {
-            transform: rotate(360deg);
-          }
-        }
-      `}</style>
     </div>
   );
 };

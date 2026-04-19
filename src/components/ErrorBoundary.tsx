@@ -1,4 +1,4 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 
 interface Props {
@@ -77,6 +77,24 @@ export class ErrorBoundary extends Component<Props, State> {
             <p style={{ color: '#6b7280', marginBottom: '24px', lineHeight: '1.5' }}>
               We apologize for the inconvenience. An unexpected error occurred in the application.
             </p>
+
+            {this.state.error && (
+              <div style={{ 
+                background: 'rgba(239, 68, 68, 0.05)', 
+                color: '#ef4444', 
+                padding: '16px', 
+                borderRadius: '8px', 
+                fontSize: '0.85rem', 
+                fontFamily: 'monospace',
+                marginBottom: '24px',
+                textAlign: 'left',
+                overflowX: 'auto',
+                border: '1px solid rgba(239, 68, 68, 0.2)'
+              }}>
+                <div style={{ fontWeight: 800, marginBottom: '4px' }}>Error Details:</div>
+                {this.state.error.message}
+              </div>
+            )}
 
             <button
               onClick={this.handleReset}

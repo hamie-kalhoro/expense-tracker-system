@@ -12,7 +12,6 @@ interface EmailPayload {
  */
 export const sendEmailViaBrevo = async (payload: EmailPayload): Promise<boolean> => {
   try {
-    // Call local backend email server
     const response = await fetch('http://localhost:3001/api/send-email', {
       method: 'POST',
       headers: {
@@ -39,136 +38,150 @@ export const sendEmailViaBrevo = async (payload: EmailPayload): Promise<boolean>
 };
 
 /**
- * Send friend request email notification
+ * Send welcome email to new users (OAuth or Email)
  */
-export const sendFriendRequestEmail = async (
+export const sendWelcomeEmail = async (
   recipientEmail: string,
-  recipientName: string,
-  senderName: string,
+  username: string,
   appUrl: string = 'http://localhost:5175'
 ) => {
   const htmlContent = `
-    <div style="font-family: Outfit, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-      <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 12px; color: white; text-align: center; margin-bottom: 30px;">
-        <h1 style="margin: 0; font-size: 28px;">SplitEase 💰</h1>
-        <p style="margin: 8px 0 0 0; font-size: 14px; opacity: 0.9;">Split expenses effortlessly</p>
+    <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+      
+      <div style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); padding: 40px 20px; text-align: center;">
+        <h1 style="margin: 0; font-size: 28px; color: #ffffff; letter-spacing: -0.5px;">Welcome to SplitEase! 👋</h1>
+        <p style="margin: 8px 0 0 0; font-size: 15px; color: rgba(255, 255, 255, 0.9);">The easiest way to share expenses.</p>
       </div>
 
-      <div style="background: #f9fafb; padding: 24px; border-radius: 12px; margin-bottom: 20px;">
-        <h2 style="color: #1f2937; margin-top: 0;">Friend Request from ${senderName}</h2>
+      <div style="padding: 40px 30px;">
+        <h2 style="color: #0f172a; margin-top: 0; font-size: 22px; font-weight: 700;">Account Activated successfully</h2>
         
-        <p style="color: #6b7280; line-height: 1.6; margin-bottom: 20px;">
-          Hi ${recipientName},
+        <p style="color: #475569; line-height: 1.6; font-size: 16px; margin-bottom: 20px;">
+          Hi <strong>@${username}</strong>,
         </p>
 
-        <p style="color: #6b7280; line-height: 1.6; margin-bottom: 20px;">
-          <strong>${senderName}</strong> sent you a friend request on SplitEase! They want to split expenses with you. 
+        <p style="color: #475569; line-height: 1.6; font-size: 16px; margin-bottom: 20px;">
+          Your account is fully set up. At SplitEase, we make tracking balances, splitting bills, and settling up incredibly simple.
         </p>
 
-        <p style="color: #6b7280; line-height: 1.6; margin-bottom: 24px;">
-          To respond to this request and start splitting expenses together, please log in to SplitEase:
-        </p>
-
-        <div style="text-align: center; margin-bottom: 24px;">
-          <a href="${appUrl}" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px;">
-            Open SplitEase
-          </a>
+        <div style="background: #f1f5f9; border-radius: 8px; padding: 20px; margin: 25px 0;">
+          <h3 style="margin: 0 0 10px 0; color: #334155; font-size: 16px;">Here's what you can do right now:</h3>
+          <ul style="margin: 0; padding-left: 20px; color: #475569; font-size: 15px; line-height: 1.5;">
+            <li style="margin-bottom: 8px;"><strong>Add Friends:</strong> Search for your friends using their @username.</li>
+            <li style="margin-bottom: 8px;"><strong>Log Expenses:</strong> Did you pay for dinner? Log it, split the cost, and SplitEase calculates who owes what.</li>
+            <li><strong>Settle Up:</strong> See exactly your net balance across all your friends.</li>
+          </ul>
         </div>
 
-        <p style="color: #9ca3af; font-size: 12px; text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
-          If you don't have a SplitEase account yet, you can <a href="${appUrl}" style="color: #667eea; text-decoration: none;">create one here</a> using this email address.
-        </p>
+        <div style="text-align: center; margin: 35px 0;">
+          <a href="${appUrl}" style="display: inline-block; background-color: #6366f1; color: #ffffff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px; box-shadow: 0 2px 4px rgba(99, 102, 241, 0.3);">
+            Go to your Dashboard
+          </a>
+        </div>
       </div>
 
-      <div style="background: #fef3c7; padding: 16px; border-radius: 8px; border-left: 4px solid #f59e0b; margin-bottom: 20px;">
-        <p style="margin: 0; color: #92400e; font-size: 13px;">
-          <strong>💡 Tip:</strong> Don't forget to accept the friend request once you log in so you can start splitting expenses together!
-        </p>
-      </div>
-
-      <div style="text-align: center; color: #9ca3af; font-size: 12px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
-        <p style="margin: 0;">© 2026 SplitEase. All rights reserved.</p>
-        <p style="margin: 8px 0 0 0;">This is an automated message. Please do not reply to this email.</p>
+      <div style="background: #f8fafc; padding: 20px; text-align: center; border-top: 1px solid #e2e8f0;">
+        <p style="margin: 0; color: #94a3b8; font-size: 12px;">© 2026 SplitEase. All rights reserved.</p>
+        <p style="margin: 4px 0 0 0; color: #94a3b8; font-size: 12px;">You received this because you registered an account on SplitEase.</p>
       </div>
     </div>
   `;
 
   return sendEmailViaBrevo({
     to: recipientEmail,
-    subject: `${senderName} sent you a friend request on SplitEase 🎉`,
+    subject: `Welcome to SplitEase, @${username}! 🎉`,
     htmlContent
   });
 };
 
 /**
- * Send reminder email to non-registered user
+ * Send friend request email notification
  */
-export const sendJoinAppReminderEmail = async (
+export const sendFriendRequestEmail = async (
   recipientEmail: string,
-  senderName: string,
+  recipientUsername: string,
+  senderUsername: string,
   appUrl: string = 'http://localhost:5175'
 ) => {
   const htmlContent = `
-    <div style="font-family: Outfit, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-      <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 12px; color: white; text-align: center; margin-bottom: 30px;">
-        <h1 style="margin: 0; font-size: 28px;">SplitEase 💰</h1>
-        <p style="margin: 8px 0 0 0; font-size: 14px; opacity: 0.9;">Split expenses effortlessly</p>
+    <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+      <div style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); padding: 40px 20px; text-align: center;">
+        <h1 style="margin: 0; font-size: 28px; color: #ffffff; letter-spacing: -0.5px;">SplitEase</h1>
+        <p style="margin: 8px 0 0 0; font-size: 15px; color: rgba(255, 255, 255, 0.9);">Expense sharing done right.</p>
       </div>
-
-      <div style="background: #fee2e2; padding: 24px; border-radius: 12px; border-left: 4px solid #dc2626; margin-bottom: 30px;">
-        <p style="margin: 0; color: #b91c1c; font-weight: 600; font-size: 15px;">
-          ⚠️ Friend Request Not Yet Delivered
+      <div style="padding: 40px 30px;">
+        <h2 style="color: #0f172a; margin-top: 0; font-size: 22px; font-weight: 700;">New Friend Request</h2>
+        <p style="color: #475569; line-height: 1.6; font-size: 16px; margin-bottom: 20px;">
+          Hi <strong>@${recipientUsername}</strong>,
         </p>
-      </div>
-
-      <div style="background: #f9fafb; padding: 24px; border-radius: 12px; margin-bottom: 20px;">
-        <h2 style="color: #1f2937; margin-top: 0;">Join SplitEase to Accept ${senderName}'s Friend Request</h2>
-        
-        <p style="color: #6b7280; line-height: 1.6; margin-bottom: 20px;">
-          Hi there,
+        <p style="color: #475569; line-height: 1.6; font-size: 16px; margin-bottom: 30px;">
+          <strong>@${senderUsername}</strong> wants to be friends on SplitEase so you can start sharing expenses.
         </p>
-
-        <p style="color: #6b7280; line-height: 1.6; margin-bottom: 20px;">
-          <strong>${senderName}</strong> tried to send you a friend request on SplitEase, but there's no account registered with your email address (<strong>${recipientEmail}</strong>).
-        </p>
-
-        <p style="color: #6b7280; line-height: 1.6; margin-bottom: 20px;">
-          To receive the friend request and start splitting expenses with ${senderName}, you'll need to create a SplitEase account.
-        </p>
-
-        <div style="text-align: center; margin-bottom: 24px;">
-          <a href="${appUrl}" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px;">
-            Sign Up Now
+        <div style="text-align: center; margin: 35px 0;">
+          <a href="${appUrl}" style="display: inline-block; background-color: #6366f1; color: #ffffff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px; box-shadow: 0 2px 4px rgba(99, 102, 241, 0.3);">
+            Open SplitEase to Accept
           </a>
         </div>
-
-        <div style="background: #f3f4f6; padding: 16px; border-radius: 8px; margin-bottom: 20px;">
-          <p style="margin: 0; color: #6b7280; font-size: 13px;">
-            <strong>How to get started:</strong>
-          </p>
-          <ol style="margin: 8px 0 0 0; padding-left: 20px; color: #6b7280; font-size: 13px;">
-            <li>Click "Sign Up Now" above</li>
-            <li>Sign up with this email address: <strong>${recipientEmail}</strong></li>
-            <li>Check SplitEase for friend requests</li>
-            <li>Accept ${senderName}'s request and start splitting!</li>
-          </ol>
-        </div>
-
-        <p style="color: #9ca3af; font-size: 12px; text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
-          Once you create an account with this email, ${senderName}'s friend request will be waiting for you!
+        <p style="color: #94a3b8; font-size: 14px; text-align: center; margin-top: 30px;">
+          Tip: You can manage all your friend requests directly in your Profile hub.
         </p>
       </div>
-
-      <div style="text-align: center; color: #9ca3af; font-size: 12px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
-        <p style="margin: 0;">© 2026 SplitEase. All rights reserved.</p>
-        <p style="margin: 8px 0 0 0;">This is an automated message. Please do not reply to this email.</p>
+      <div style="background: #f8fafc; padding: 20px; text-align: center; border-top: 1px solid #e2e8f0;">
+        <p style="margin: 0; color: #94a3b8; font-size: 12px;">© 2026 SplitEase. All rights reserved.</p>
       </div>
     </div>
   `;
 
   return sendEmailViaBrevo({
     to: recipientEmail,
-    subject: `${senderName} wants to split expenses with you on SplitEase 📧`,
+    subject: `@${senderUsername} wants to split expenses with you! 💸`,
+    htmlContent
+  });
+};
+
+export const sendJoinAppReminderEmail = async (
+  recipientEmail: string,
+  senderUsername: string,
+  appUrl: string = 'http://localhost:5175'
+) => {
+  const htmlContent = `
+    <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+      <div style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); padding: 40px 20px; text-align: center;">
+        <h1 style="margin: 0; font-size: 28px; color: #ffffff; letter-spacing: -0.5px;">SplitEase</h1>
+        <p style="margin: 8px 0 0 0; font-size: 15px; color: rgba(255, 255, 255, 0.9);">Expense sharing done right.</p>
+      </div>
+      <div style="padding: 40px 30px;">
+        <h2 style="color: #0f172a; margin-top: 0; font-size: 22px; font-weight: 700;">Action Required</h2>
+        <p style="color: #475569; line-height: 1.6; font-size: 16px; margin-bottom: 20px;">
+          Hi there,
+        </p>
+        <p style="color: #475569; line-height: 1.6; font-size: 16px; margin-bottom: 20px;">
+          <strong>@${senderUsername}</strong> tried to add you as a friend on SplitEase to share an expense, but you don't have an account registered with this email address yet.
+        </p>
+        <div style="background: #f1f5f9; border-radius: 8px; padding: 20px; margin: 25px 0;">
+          <h3 style="margin: 0 0 10px 0; color: #334155; font-size: 16px;">How to get started:</h3>
+          <ol style="margin: 0; padding-left: 20px; color: #475569; font-size: 15px; line-height: 1.5;">
+            <li style="margin-bottom: 6px;">Sign up using this exact email address</li>
+            <li style="margin-bottom: 6px;">Pick your unique username</li>
+            <li>Accept the pending request from @${senderUsername}</li>
+          </ol>
+        </div>
+        <div style="text-align: center; margin: 35px 0;">
+          <a href="${appUrl}" style="display: inline-block; background-color: #6366f1; color: #ffffff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px; box-shadow: 0 2px 4px rgba(99, 102, 241, 0.3);">
+            Create Your Account
+          </a>
+        </div>
+      </div>
+      <div style="background: #f8fafc; padding: 20px; text-align: center; border-top: 1px solid #e2e8f0;">
+        <p style="margin: 0; color: #94a3b8; font-size: 12px;">© 2026 SplitEase. All rights reserved.</p>
+        <p style="margin: 4px 0 0 0; color: #94a3b8; font-size: 12px;">This is an automated invitation.</p>
+      </div>
+    </div>
+  `;
+
+  return sendEmailViaBrevo({
+    to: recipientEmail,
+    subject: `@${senderUsername} invited you to SplitEase! 📧`,
     htmlContent
   });
 };

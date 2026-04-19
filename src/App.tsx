@@ -5,57 +5,88 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { DataProvider } from './contexts/DataContext';
 import { FriendsProvider } from './contexts/FriendsContext';
 import { NotificationsProvider } from './contexts/NotificationsContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import Auth from './components/Auth';
 import Dashboard from './components/Dashboard';
+import UserProfile from './components/UserProfile';
 import './index.css';
 
 export const ProtectedRoute = ({ children }: { children: ReactNode }) => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+  if (loading) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span className="spinner"></span></div>;
   if (!user) return <Navigate to="/login" replace />;
   return children;
 };
 
 const AppRoutes = () => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span className="spinner"></span></div>;
+  }
 
   return (
     <Routes>
-      <Route path="/login" element={user ? <Navigate to="/" replace /> : <Auth />} />
+      <Route path="/login" element={user ? <Navigate to="/profile" replace /> : <Auth />} />
       <Route
-        path="/"
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <UserProfile />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard"
         element={
           <ProtectedRoute>
             <Dashboard />
           </ProtectedRoute>
         }
       />
+      <Route path="/" element={user ? <Navigate to="/profile" replace /> : <Navigate to="/login" replace />} />
     </Routes>
   );
 };
 
 const App = () => {
   return (
-    <AuthProvider>
-      <DataProvider>
+    <ThemeProvider>
+      <AuthProvider>
         <NotificationsProvider>
-          <FriendsProvider>
-            <Router>
-              <AppRoutes />
-              <Toaster
-                position="bottom-center"
-                toastOptions={{
-                  style: {
-                    background: 'var(--bg-card)',
-                    color: 'var(--text-main)',
-                    border: '1px solid var(--border)',
-                  },
-                }}
-              />
-            </Router>
-          </FriendsProvider>
+          <DataProvider>
+            <FriendsProvider>
+              <Router>
+                <AppRoutes />
+                <Toaster
+                  position="bottom-center"
+                  toastOptions={{
+                    style: {
+                      background: 'var(--bg-elevated)',
+                      color: 'var(--text-primary)',
+                      border: '1px solid var(--border)',
+                      fontFamily: "'Inter', sans-serif",
+                    },
+                    success: {
+                      iconTheme: {
+                        primary: 'var(--success)',
+                        secondary: '#fff',
+                      },
+                    },
+                    error: {
+                      iconTheme: {
+                        primary: 'var(--error)',
+                        secondary: '#fff',
+                      },
+                    },
+                  }}
+                />
+              </Router>
+            </FriendsProvider>
+          </DataProvider>
         </NotificationsProvider>
-      </DataProvider>
-    </AuthProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 };
 

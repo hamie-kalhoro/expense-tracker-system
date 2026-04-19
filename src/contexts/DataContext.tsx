@@ -1,20 +1,19 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { db } from '../firebase/config';
+import { supabase } from '../supabase/config';
 import { useAuth } from './AuthContext';
-import { collection, query, onSnapshot, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, orderBy } from 'firebase/firestore';
+import { useNotifications } from './NotificationsContext';
 
 export interface Expense {
   id: string;
   description: string;
   amount: number;
-  paidBy: string;
-  paidByName: string;
-  splitWith: string[];
-  splitWithNames: string[];
-  date: unknown;
+  paidBy: string; // User ID of payer
+  paidByName: string; // We'll compute this from users table
+  splitWith: string[]; // User IDs of participants
+  splitWithNames: string[]; // User names of participants
+  date: string;
   groupId: string;
   category?: string;
-  notes?: string;
 }
 
 export interface UserBalance {
@@ -35,7 +34,7 @@ interface DataContextType {
   expenses: Expense[];
   balances: UserBalance[];
   settlements: Settlement[];
-  addExpense: (description: string, amount: number, splitWithNames: string[], category?: string) => Promise<void>;
+  addExpense: (description: string, amount: number, participantUids: string[], date: string, category?: string) => Promise<void>;
   updateExpense: (id: string, description: string, amount: number) => Promise<void>;
   deleteExpense: (id: string) => Promise<void>;
   totalSpent: number;
@@ -44,24 +43,25 @@ interface DataContextType {
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
-// ─── Mock storage ───
-let mockExpenses: Expense[] = [];
-let mockIdCounter = 1;
-
 export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, isMockMode } = useAuth();
+  const { user, userProfile } = useAuth();
+  const { addNotification } = useNotifications();
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [balances, setBalances] = useState<UserBalance[]>([]);
   const [settlements, setSettlements] = useState<Settlement[]>([]);
   const [totalSpent, setTotalSpent] = useState(0);
   const [myBalance, setMyBalance] = useState(0);
 
-  // ─── Recalculate whenever expenses change ───
+  // Recalculate logic based strictly on the structured Expense[] array
   const recalculate = React.useCallback((exps: Expense[]) => {
-    const spent = exps.reduce((s, e) => s + e.amount, 0);
+    const currentName = userProfile?.username || userProfile?.displayName || 'You';
+
+    const spent = exps.reduce((s, e) => {
+      // Amount I spent: Only count the amount I paid
+      return e.paidByName === currentName ? s + e.amount : s;
+    }, 0);
     setTotalSpent(spent);
 
-    // Net balance per name
     const netMap: Record<string, number> = {};
 
     exps.forEach(exp => {
@@ -77,8 +77,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
     });
 
-    const currentName = user?.displayName || 'You';
-
     const balArr: UserBalance[] = Object.entries(netMap).map(([name, bal]) => ({
       userId: name,
       userName: name === currentName ? 'You' : name,
@@ -89,7 +87,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const me = balArr.find(b => b.userName === 'You');
     setMyBalance(me ? me.balance : 0);
 
-    // ─── Settlements (greedy) ───
+    // Greedy Settlements Algorithm
     const debtors: { name: string; amount: number }[] = [];
     const creditors: { name: string; amount: number }[] = [];
 
@@ -120,93 +118,154 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (creditors[j].amount < 0.01) j++;
     }
     setSettlements(settArr);
-  }, [user?.displayName]);
+  }, [userProfile]);
 
-  // ─── Real-time sync ───
+  // Fetch expenses mapping to Supabase
+  const loadExpenses = React.useCallback(async () => {
+    if (!user) return;
+    
+    // We will fetch expenses via RPC or multiple joins
+    try {
+      // 1. Fetch expenses where user is payer OR participant
+      // We rely on RLS to only return expenses the user is part of.
+      const { data: expensesData, error: expensesError } = await supabase
+        .from('expenses')
+        .select(`
+          id, description, amount, paid_by, category, created_at, group_id, expense_date,
+          payer:users!paid_by ( username )
+        `)
+        .order('expense_date', { ascending: false });
+
+      if (expensesError) throw expensesError;
+
+      // 2. We need participants for each expense to calculate splits.
+      // In a real prod environment we would use a unified Supabase view, but for MVP we fetch participants:
+      const expenseIds = expensesData?.map(e => e.id) || [];
+      
+      let participantsData: any[] = [];
+      if (expenseIds.length > 0) {
+        const { data: pData, error: pError } = await supabase
+          .from('expense_participants')
+          .select(`
+            expense_id, 
+            user_id,
+            user:users!user_id ( username )
+          `)
+          .in('expense_id', expenseIds);
+          
+        if (pError) throw pError;
+        participantsData = pData || [];
+      }
+
+      const formattedExps: Expense[] = (expensesData || []).map((exp: any) => {
+        // Find participants for this expense
+        const parts = participantsData.filter(p => p.expense_id === exp.id);
+        const splitWithUid = parts.map(p => p.user_id);
+        const splitWithNames = parts.map(p => p.user?.username || 'Unknown');
+        
+        // Ensure payer is in the split if they were part of the participants (which they usually are)
+        return {
+          id: exp.id,
+          description: exp.description,
+          amount: parseFloat(exp.amount),
+          paidBy: exp.paid_by,
+          paidByName: exp.payer?.username || 'Unknown',
+          splitWith: splitWithUid,
+          splitWithNames: splitWithNames,
+          date: exp.expense_date || exp.created_at,
+          groupId: exp.group_id,
+          category: exp.category
+        };
+      });
+
+      setExpenses(formattedExps);
+      recalculate(formattedExps);
+      
+    } catch (e) {
+      console.error('Error fetching expenses:', e);
+    }
+  }, [user, recalculate]);
+
   useEffect(() => {
     if (!user) return;
+    loadExpenses();
 
-    if (isMockMode) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setExpenses(mockExpenses);
-      recalculate(mockExpenses);
-      return;
-    }
+    // Subscribe to realtime updates on expenses and participants
+    const expensesSub = supabase.channel('expenses_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'expenses' }, () => {
+        loadExpenses();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'expense_participants' }, () => {
+        loadExpenses();
+      })
+      .subscribe();
 
-    if (!db) return;
+    return () => {
+      supabase.removeChannel(expensesSub);
+    };
+  }, [user, loadExpenses]);
 
-    const q = query(collection(db, 'expenses'), orderBy('date', 'desc'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const exps: Expense[] = [];
-      snapshot.forEach((d) => {
-        exps.push({ id: d.id, ...d.data() } as Expense);
-      });
-      setExpenses(exps);
-      recalculate(exps);
-    });
+  // CRUD
+  const addExpense = async (description: string, amount: number, participantUids: string[], date: string, category?: string) => {
+    if (!user || !userProfile) return;
 
-    return unsubscribe;
-  }, [user, isMockMode, recalculate]);
+    // Ensure the payer (current user) is ALWAYS included as a participant for balance tracking
+    const finalParticipantUids = Array.from(new Set([...participantUids, user.id]));
 
-  // ─── CRUD ───
-  const addExpense = async (description: string, amount: number, splitWithNames: string[], category?: string) => {
-    if (!user) return;
-    const currentName = user.displayName || 'You';
-    const allNames = [currentName, ...splitWithNames];
-
-    if (isMockMode) {
-      const newExp: Expense = {
-        id: `mock-${mockIdCounter++}`,
+    // 1. Insert expense
+    const { data: expData, error: expError } = await supabase
+      .from('expenses')
+      .insert({
         description,
         amount,
-        paidBy: user.uid,
-        paidByName: currentName,
-        splitWith: allNames,
-        splitWithNames: allNames,
-        date: new Date(),
-        groupId: 'default',
-        category
-      };
-      mockExpenses = [newExp, ...mockExpenses];
-      setExpenses([...mockExpenses]);
-      recalculate(mockExpenses);
-      return;
+        paid_by: user.id,
+        category: category || 'other',
+        expense_date: date
+      })
+      .select('id')
+      .single();
+
+    if (expError || !expData) {
+      throw new Error(expError?.message || "Failed to create expense record");
     }
 
-    if (!db) return;
-    await addDoc(collection(db, 'expenses'), {
-      description,
-      amount,
-      paidBy: user.uid,
-      paidByName: currentName,
-      splitWith: allNames,
-      splitWithNames: allNames,
-      date: serverTimestamp(),
-      groupId: 'default',
-      category
-    });
+    // 2. Insert participants
+    const participants = finalParticipantUids.map(uid => ({
+      expense_id: expData.id,
+      user_id: uid
+    }));
+
+    const { error: partError } = await supabase
+      .from('expense_participants')
+      .insert(participants);
+      
+    if (partError) {
+      console.error(partError);
+    } else {
+      // 3. Send notifications to all other participants (except the payer)
+      finalParticipantUids.forEach(uid => {
+        if (uid !== user.id) {
+          addNotification({
+            userId: uid,
+            type: 'expense-added',
+            title: 'New Expense',
+            message: `${userProfile.username} added "${description}" on ${new Date(date).toLocaleDateString()}`,
+            fromName: userProfile.username,
+            fromUid: user.id,
+            actionUrl: '/dashboard'
+          });
+        }
+      });
+    }
   };
 
   const updateExpense = async (id: string, description: string, amount: number) => {
-    if (isMockMode) {
-      mockExpenses = mockExpenses.map(e => e.id === id ? { ...e, description, amount } : e);
-      setExpenses([...mockExpenses]);
-      recalculate(mockExpenses);
-      return;
-    }
-    if (!db) return;
-    await updateDoc(doc(db, 'expenses', id), { description, amount });
+    await supabase.from('expenses').update({ description, amount }).eq('id', id);
   };
 
   const deleteExpense = async (id: string) => {
-    if (isMockMode) {
-      mockExpenses = mockExpenses.filter(e => e.id !== id);
-      setExpenses([...mockExpenses]);
-      recalculate(mockExpenses);
-      return;
-    }
-    if (!db) return;
-    await deleteDoc(doc(db, 'expenses', id));
+    await supabase.from('expenses').delete().eq('id', id);
+    // Casading deletes in Postgres will clean up expense_participants automatically
   };
 
   return (
@@ -216,7 +275,6 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 };
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const useData = () => {
   const context = useContext(DataContext);
   if (context === undefined) {
