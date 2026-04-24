@@ -12,7 +12,7 @@ const Auth: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
 
   // Login form
-  const [loginEmail, setLoginEmail] = useState('');
+  const [loginIdentifier, setLoginIdentifier] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
 
   // Signup form
@@ -46,13 +46,13 @@ const Auth: React.FC = () => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!loginEmail || !loginPassword) {
+    if (!loginIdentifier || !loginPassword) {
       toast.error('Please fill in all fields');
       return;
     }
     setLoading(true);
     try {
-      await signInWithEmail(loginEmail, loginPassword);
+      await signInWithEmail(loginIdentifier, loginPassword);
       toast.success('Welcome back! 👋');
     } catch (error: any) {
       toast.error(error.message || 'Login failed');
@@ -312,21 +312,39 @@ const Auth: React.FC = () => {
               </div>
             )}
 
-            <div>
-              <label style={labelStyle}>Email Address</label>
-              <div style={{ position: 'relative' }}>
-                <Mail size={18} style={iconStyle} />
-                <input
-                  type="email"
-                  value={isLogin ? loginEmail : signupEmail}
-                  onChange={(e) => isLogin ? setLoginEmail(e.target.value) : setSignupEmail(e.target.value)}
-                  className="input-field"
-                  style={{ paddingLeft: '44px' }}
-                  placeholder="name@company.com"
-                  required
-                />
+            {isLogin ? (
+              <div>
+                <label style={labelStyle}>Email or Username</label>
+                <div style={{ position: 'relative' }}>
+                  <AtSign size={18} style={iconStyle} />
+                  <input
+                    type="text"
+                    value={loginIdentifier}
+                    onChange={(e) => setLoginIdentifier(e.target.value)}
+                    className="input-field"
+                    style={{ paddingLeft: '44px' }}
+                    placeholder="alex_smith or name@company.com"
+                    required
+                  />
+                </div>
               </div>
-            </div>
+            ) : (
+              <div>
+                <label style={labelStyle}>Email Address</label>
+                <div style={{ position: 'relative' }}>
+                  <Mail size={18} style={iconStyle} />
+                  <input
+                    type="email"
+                    value={signupEmail}
+                    onChange={(e) => setSignupEmail(e.target.value)}
+                    className="input-field"
+                    style={{ paddingLeft: '44px' }}
+                    placeholder="name@company.com"
+                    required
+                  />
+                </div>
+              </div>
+            )}
 
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

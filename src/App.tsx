@@ -9,6 +9,7 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import Auth from './components/Auth';
 import Dashboard from './components/Dashboard';
 import UserProfile from './components/UserProfile';
+import LandingPage from './components/LandingPage';
 import './index.css';
 
 export const ProtectedRoute = ({ children }: { children: ReactNode }) => {
@@ -44,7 +45,7 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
-      <Route path="/" element={user ? <Navigate to="/profile" replace /> : <Navigate to="/login" replace />} />
+      <Route path="/" element={user ? <Navigate to="/profile" replace /> : <LandingPage />} />
     </Routes>
   );
 };

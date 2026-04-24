@@ -18,7 +18,7 @@ interface AuthContextType {
   userProfile: UserProfile | null;
   loading: boolean;
   signInWithGoogle: () => Promise<void>;
-  signInWithEmail: (email: string, password: string) => Promise<void>;
+  signInWithEmail: (identifier: string, password: string) => Promise<void>;
   signUpWithEmail: (email: string, password: string, username: string) => Promise<any>;
   updateProfile: (updates: { displayName?: string, photoURL?: string, bio?: string }) => Promise<void>;
   signOut: () => Promise<void>;
@@ -186,8 +186,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Removed separate onAuthStateChange listener since fetchProfile now handles it reliably
 
-  const signInWithEmail = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const signInWithEmail = async (identifier: string, password: string) => {
+    let emailToLogin = identifier;
+    
+    // If it doesn't look like an email, assume it's a username
+    if (!identifier.includes('@')) {
+      const { data, error } = await supabase
+        .from('users')
+        .select('email')
+        .eq('username', identifier.toLowerCase())
+        .single();
+        
+      if (error || !data) {
+        throw new Error('Invalid username or password');
+      }
+      emailToLogin = data.email;
+    }
+
+    const { error } = await supabase.auth.signInWithPassword({ email: emailToLogin, password });
     if (error) throw error;
   };
 
