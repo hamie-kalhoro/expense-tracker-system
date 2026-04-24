@@ -49,10 +49,15 @@ const AddExpenseModal: React.FC<AddExpenseModalProps> = ({ open, onClose, friend
 
     setLoading(true);
     try {
+      const selectedFriendsNames = friends
+        .filter(f => selectedFriends.includes(f.uid))
+        .map(f => f.username);
+
       await addExpense(
         description.trim(),
         numAmount,
         selectedFriends,
+        selectedFriendsNames,
         date,
         category
       );

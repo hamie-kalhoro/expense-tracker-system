@@ -35,7 +35,7 @@ interface DataContextType {
   expenses: Expense[];
   balances: UserBalance[];
   settlements: Settlement[];
-  addExpense: (description: string, amount: number, participantUids: string[], date: string, category?: string) => Promise<void>;
+  addExpense: (description: string, amount: number, participantUids: string[], participantNames: string[], date: string, category?: string) => Promise<void>;
   updateExpense: (id: string, description: string, amount: number) => Promise<void>;
   deleteExpense: (id: string) => Promise<void>;
   totalSpent: number;
@@ -212,17 +212,19 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [user, loadExpenses]);
 
   // CRUD
-  const addExpense = async (description: string, amount: number, participantUids: string[], date: string, category?: string) => {
+  const addExpense = async (description: string, amount: number, participantUids: string[], participantNames: string[], date: string, category?: string) => {
     if (!user || !userProfile) return;
 
     // Ensure the payer (current user) is ALWAYS included as a participant for balance tracking
     const finalParticipantUids = Array.from(new Set([...participantUids, user.id]));
+    const currentUsername = userProfile.username;
 
-    // Calculate individual share for the notification message
-    const shareAmount = amount / finalParticipantUids.length;
+    // Calculate individual share
+    const totalPeople = finalParticipantUids.length;
+    const shareAmount = amount / totalPeople;
 
     try {
-      // Use the atomic RPC function for production-ready reliability
+      // Use the atomic RPC function
       const { error: rpcError } = await supabase
         .rpc('add_expense_v3', {
           p_description: description,
@@ -232,32 +234,33 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
           p_participant_uids: finalParticipantUids
         });
 
-      if (rpcError) {
-        throw new Error(rpcError.message || "Failed to create expense via RPC");
-      }
+      if (rpcError) throw new Error(rpcError.message || "Failed to create expense");
 
-      // 3. Send notifications to all other participants (except the payer)
-      // Logic remains the same, triggered after successful atomic insert
-      finalParticipantUids.forEach(async (uid) => {
-        if (uid !== user.id) {
-          try {
-            await addNotification({
-              userId: uid,
-              type: 'expense-added',
-              title: 'New Shared Expense 💸',
-              message: `${userProfile.username} added "${description}" - Your share: $${shareAmount.toFixed(2)}`,
-              fromName: userProfile.username,
-              fromUid: user.id,
-              actionUrl: '/dashboard'
-            });
-          } catch (notifyError) {
-            console.warn('Notification failed for user:', uid, notifyError);
-          }
+      // Send notifications to all other participants
+      participantUids.forEach(async (uid, idx) => {
+        if (uid === user.id) return;
+
+        // Construct a clear list of other participants for the message
+        const others = participantNames.filter((_, i) => participantUids[i] !== uid);
+        const othersText = others.length > 0 ? ` with ${others.join(', ')}` : '';
+
+        try {
+          await addNotification({
+            userId: uid,
+            type: 'expense-added',
+            title: 'New Split Payment 💸',
+            message: `${currentUsername} added "${description}"${othersText}. Total: $${amount.toFixed(2)} | Your Share: $${shareAmount.toFixed(2)}`,
+            fromName: currentUsername,
+            fromUid: user.id,
+            actionUrl: '/dashboard'
+          });
+        } catch (notifyError) {
+          console.warn('Notification failed for user:', uid, notifyError);
         }
       });
     } catch (err: any) {
       console.error('Supabase addExpense error:', err);
-      throw err; // Re-throw to be caught by the UI
+      throw err;
     }
   };
 
