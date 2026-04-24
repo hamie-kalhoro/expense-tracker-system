@@ -54,46 +54,51 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Recalculate logic based strictly on the structured Expense[] array
   const recalculate = React.useCallback((exps: Expense[]) => {
-    const currentName = userProfile?.username || userProfile?.displayName || 'You';
+    if (!user) return;
+    const currentUid = user.id;
 
+    // Total Spent: How much I have physically paid out of my pocket
     const spent = exps.reduce((s, e) => {
-      // Amount I spent: Only count the amount I paid
-      return e.paidByName === currentName ? s + e.amount : s;
+      return e.paidBy === currentUid ? s + e.amount : s;
     }, 0);
     setTotalSpent(spent);
 
     const netMap: Record<string, number> = {};
+    const nameMap: Record<string, string> = {};
 
     exps.forEach(exp => {
-      const perPerson = exp.amount / exp.splitWithNames.length;
+      const perPerson = exp.amount / exp.splitWith.length;
 
       // Payer gets credit
-      const payerName = exp.paidByName;
-      netMap[payerName] = (netMap[payerName] || 0) + exp.amount;
+      const payerId = exp.paidBy;
+      netMap[payerId] = (netMap[payerId] || 0) + exp.amount;
+      nameMap[payerId] = exp.paidByName;
 
       // Each participant owes their share
-      exp.splitWithNames.forEach(name => {
-        netMap[name] = (netMap[name] || 0) - perPerson;
+      exp.splitWith.forEach((uid, idx) => {
+        netMap[uid] = (netMap[uid] || 0) - perPerson;
+        if (!nameMap[uid]) nameMap[uid] = exp.splitWithNames[idx];
       });
     });
 
-    const balArr: UserBalance[] = Object.entries(netMap).map(([name, bal]) => ({
-      userId: name,
-      userName: name === currentName ? 'You' : name,
+    const balArr: UserBalance[] = Object.entries(netMap).map(([uid, bal]) => ({
+      userId: uid,
+      userName: uid === currentUid ? 'You' : (nameMap[uid] || 'Unknown'),
       balance: Math.round(bal * 100) / 100
     }));
     setBalances(balArr);
 
-    const me = balArr.find(b => b.userName === 'You');
+    const me = balArr.find(b => b.userId === currentUid);
     setMyBalance(me ? me.balance : 0);
 
     // Greedy Settlements Algorithm
-    const debtors: { name: string; amount: number }[] = [];
-    const creditors: { name: string; amount: number }[] = [];
+    const debtors: { uid: string; name: string; amount: number }[] = [];
+    const creditors: { uid: string; name: string; amount: number }[] = [];
 
-    Object.entries(netMap).forEach(([name, bal]) => {
-      if (bal < -0.01) debtors.push({ name, amount: -bal });
-      if (bal > 0.01) creditors.push({ name, amount: bal });
+    Object.entries(netMap).forEach(([uid, bal]) => {
+      const name = nameMap[uid] || uid;
+      if (bal < -0.01) debtors.push({ uid, name, amount: -bal });
+      if (bal > 0.01) creditors.push({ uid, name, amount: bal });
     });
 
     debtors.sort((a, b) => b.amount - a.amount);
@@ -105,10 +110,10 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const transfer = Math.min(debtors[i].amount, creditors[j].amount);
       if (transfer > 0.01) {
         settArr.push({
-          from: debtors[i].name,
-          fromName: debtors[i].name === currentName ? 'You' : debtors[i].name,
-          to: creditors[j].name,
-          toName: creditors[j].name === currentName ? 'You' : creditors[j].name,
+          from: debtors[i].uid,
+          fromName: debtors[i].uid === currentUid ? 'You' : debtors[i].name,
+          to: creditors[j].uid,
+          toName: creditors[j].uid === currentUid ? 'You' : creditors[j].name,
           amount: Math.round(transfer * 100) / 100,
         });
       }
@@ -118,7 +123,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (creditors[j].amount < 0.01) j++;
     }
     setSettlements(settArr);
-  }, [userProfile]);
+  }, [user]);
 
   // Fetch expenses mapping to Supabase
   const loadExpenses = React.useCallback(async () => {
@@ -260,8 +265,14 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const deleteExpense = async (id: string) => {
-    await supabase.from('expenses').delete().eq('id', id);
-    // Casading deletes in Postgres will clean up expense_participants automatically
+    const { error } = await supabase.from('expenses').delete().eq('id', id);
+    if (error) {
+      console.error('Delete error:', error);
+      toast.error('Failed to delete expense');
+    } else {
+      toast.success('Expense removed');
+      await loadExpenses(); // Immediate refresh
+    }
   };
 
   return (

@@ -110,34 +110,34 @@ const FriendsModal: React.FC<FriendsModalProps> = ({ open, onClose }) => {
           {/* Add Friend Input */}
             <div style={{ marginBottom: '32px' }}>
               <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, marginBottom: '12px', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Add by Username</label>
-              <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
                 <div style={{ position: 'relative', flex: 1, minWidth: 0 }}>
-                  <AtSign size={18} style={{ position: 'absolute', left: '16px', top: '24px', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                  <AtSign size={16} style={{ position: 'absolute', left: '14px', top: '24px', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                   <input
                     type="text" value={username}
                     onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
                     placeholder="username" className="input-field"
                     style={{ 
-                      paddingLeft: '48px', height: '48px', fontSize: '0.95rem', width: '100%',
+                      paddingLeft: '42px', height: '48px', fontSize: '0.9rem', width: '100%',
                       borderColor: usernameStatus === 'found' ? 'var(--success)' : usernameStatus === 'not-found' ? 'var(--warning)' : 'var(--border)'
                     }}
                     onKeyDown={(e) => { if (e.key === 'Enter' && usernameStatus === 'found') handleSendRequest(); }}
                   />
                   {usernameStatus !== 'idle' && (
                     <p style={{ 
-                      margin: '8px 0 0 4px', fontSize: '0.7rem', fontWeight: 600,
+                      margin: '6px 0 0 4px', fontSize: '0.65rem', fontWeight: 700,
                       color: usernameStatus === 'checking' ? 'var(--text-muted)' : usernameStatus === 'found' ? 'var(--success)' : 'var(--warning)',
                       display: 'flex', alignItems: 'center', gap: '4px'
                     }}>
-                      {usernameStatus === 'checking' && 'Checking availability...'}
-                      {usernameStatus === 'found' && <><UserCheck size={12} /> User found! Ready to connect.</>}
-                      {usernameStatus === 'not-found' && <><AlertCircle size={12} /> User not found on SplitEase.</>}
+                      {usernameStatus === 'checking' && 'Checking...'}
+                      {usernameStatus === 'found' && <><UserCheck size={10} /> Found!</>}
+                      {usernameStatus === 'not-found' && <><AlertCircle size={10} /> Not found.</>}
                     </p>
                   )}
                 </div>
                 <button
                   onClick={handleSendRequest} disabled={loading || usernameStatus !== 'found'}
-                  className="btn btn-primary" style={{ height: '48px', padding: '0 24px', flexShrink: 0 }}
+                  className="btn btn-primary" style={{ height: '48px', width: '54px', padding: 0, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                 >
                   <Send size={18} />
                 </button>

@@ -228,6 +228,7 @@ export const FriendsProvider: React.FC<{ children: React.ReactNode }> = ({ child
       toast.error('Failed to remove friend.');
     } else {
       toast.success('Friend removed.');
+      await fetchFriendships(); // Force refresh
     }
   };
 

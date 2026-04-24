@@ -323,34 +323,34 @@ const UserProfile: React.FC = () => {
             <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '24px' }}>Network Hub</h3>
             <div className="glass" style={{ padding: '24px', borderRadius: 'var(--radius-lg)' }}>
               <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, marginBottom: '12px', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Expand Circle</label>
-              <div style={{ display: 'flex', gap: '10px', marginBottom: '32px', alignItems: 'flex-start' }}>
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '32px', alignItems: 'flex-start' }}>
                 <div style={{ position: 'relative', flex: 1, minWidth: 0 }}>
-                  <AtSign size={18} style={{ position: 'absolute', left: '16px', top: '24px', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                  <AtSign size={16} style={{ position: 'absolute', left: '14px', top: '24px', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                   <input
                     type="text" value={friendUsername}
                     onChange={(e) => setFriendUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
                     placeholder="username" className="input-field"
                     style={{ 
-                      paddingLeft: '48px', height: '48px', fontSize: '0.9rem', width: '100%',
+                      paddingLeft: '42px', height: '48px', fontSize: '0.85rem', width: '100%',
                       borderColor: usernameStatus === 'found' ? 'var(--success)' : usernameStatus === 'not-found' ? 'var(--warning)' : 'var(--border)'
                     }}
                     onKeyDown={(e) => { if (e.key === 'Enter' && usernameStatus === 'found') handleSendRequest(); }}
                   />
                   {usernameStatus !== 'idle' && (
                     <p style={{ 
-                      margin: '8px 0 0 4px', fontSize: '0.7rem', fontWeight: 600,
+                      margin: '6px 0 0 4px', fontSize: '0.65rem', fontWeight: 700,
                       color: usernameStatus === 'checking' ? 'var(--text-muted)' : usernameStatus === 'found' ? 'var(--success)' : 'var(--warning)',
                       display: 'flex', alignItems: 'center', gap: '4px'
                     }}>
                       {usernameStatus === 'checking' && 'Checking...'}
-                      {usernameStatus === 'found' && <><UserCheck size={12} /> User found!</>}
-                      {usernameStatus === 'not-found' && <><AlertCircle size={12} /> Not found.</>}
+                      {usernameStatus === 'found' && <><UserCheck size={10} /> Found!</>}
+                      {usernameStatus === 'not-found' && <><AlertCircle size={10} /> Not found.</>}
                     </p>
                   )}
                 </div>
                 <button
                   onClick={handleSendRequest} disabled={sendingRequest || usernameStatus !== 'found'}
-                  className="btn btn-primary" style={{ padding: '0 24px', height: '48px', flexShrink: 0 }}
+                  className="btn btn-primary" style={{ height: '48px', width: '54px', padding: 0, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                 >
                   <Send size={18} />
                 </button>
