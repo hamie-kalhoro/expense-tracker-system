@@ -508,14 +508,14 @@ a {
 .main-container {
   flex: 1;
   padding: 40px;
-  maxWidth: 1400px;
+  max-width: 1400px;
   margin: 0 auto;
   width: 100%;
 }
 
 .nav-content {
   width: 100%;
-  maxWidth: 1400px;
+  max-width: 1400px;
   display: flex;
   align-items: center;
   justify-content: space-between;

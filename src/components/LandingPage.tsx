@@ -11,14 +11,6 @@ const LandingPage: React.FC = () => {
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
 
-  const navItemStyle = {
-    fontSize: '0.9rem',
-    fontWeight: 600,
-    color: 'var(--text-secondary)',
-    cursor: 'pointer',
-    transition: 'color 0.2s',
-  };
-
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       {/* Premium Navigation Bar */}
@@ -39,9 +31,9 @@ const LandingPage: React.FC = () => {
         </div>
 
         <div className="nav-tabs" style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
-          <span style={navItemStyle} onMouseEnter={(e) => e.currentTarget.style.color = 'var(--accent-1)'} onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-secondary)'}>Features</span>
-          <span style={navItemStyle} onMouseEnter={(e) => e.currentTarget.style.color = 'var(--accent-1)'} onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-secondary)'}>Solutions</span>
-          <span style={navItemStyle} onMouseEnter={(e) => e.currentTarget.style.color = 'var(--accent-1)'} onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-secondary)'}>About</span>
+          <span className="nav-link">Features</span>
+          <span className="nav-link">Solutions</span>
+          <span className="nav-link">About</span>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
@@ -155,9 +147,9 @@ const LandingPage: React.FC = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-secondary)' }}>
                 <User size={18} color="var(--accent-1)" />
-                <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>{`Hamid Ali Khan (Kalhoro)`}</span>
+                <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>Hamid Ali Khan (Kalhoro)</span>
               </div>
-              <a href="https://instagram.com/hamidi_2005" target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-secondary)', transition: 'color 0.2s' }}>
+              <a href="https://instagram.com/hamidi_2005" target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-secondary)', textDecoration: 'none' }} className="footer-link">
                 <Instagram size={18} color="#E4405F" />
                 <span style={{ fontSize: '0.9rem' }}>@hamidi_2005</span>
               </a>
@@ -165,7 +157,7 @@ const LandingPage: React.FC = () => {
                 <Phone size={18} color="#25D366" />
                 <span style={{ fontSize: '0.9rem' }}>+92 370 9155088</span>
               </div>
-              <a href="mailto:hamidkalhoro.in@gmail.com" style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-secondary)', transition: 'color 0.2s' }}>
+              <a href="mailto:hamidkalhoro.in@gmail.com" style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-secondary)', textDecoration: 'none' }} className="footer-link">
                 <Mail size={18} color="var(--accent-1)" />
                 <span style={{ fontSize: '0.9rem' }}>hamidkalhoro.in@gmail.com</span>
               </a>
@@ -203,6 +195,19 @@ const LandingPage: React.FC = () => {
         @keyframes bounce {
           0%, 100% { transform: translateY(0); }
           50% { transform: translateY(-5px); }
+        }
+        .nav-link {
+          font-size: 0.9rem;
+          font-weight: 600;
+          color: var(--text-secondary);
+          cursor: pointer;
+          transition: color 0.2s;
+        }
+        .nav-link:hover {
+          color: var(--accent-1);
+        }
+        .footer-link:hover {
+          color: var(--accent-1) !important;
         }
       `}</style>
     </div>
