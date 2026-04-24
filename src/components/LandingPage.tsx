@@ -1,9 +1,9 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  Wallet, Activity, Users, Shield, Zap, ArrowRight, 
-  CheckCircle, Sun, Moon, Instagram, Phone, Mail, 
-  User, Github, Twitter, ExternalLink
+  Wallet, Activity, Users, Lock, ArrowRight, 
+  CheckCircle, Sun, Moon, Phone, Mail, 
+  User, Code, Share2, MessageCircle
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 
@@ -12,7 +12,7 @@ const LandingPage: React.FC = () => {
   const { theme, toggleTheme } = useTheme();
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--page-gradient)' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       {/* Premium Navigation Bar */}
       <nav className="glass" style={{ 
         position: 'fixed', top: '20px', left: '50%', transform: 'translateX(-50%)',
@@ -28,7 +28,7 @@ const LandingPage: React.FC = () => {
           }}>
             <Wallet size={20} />
           </div>
-          <span style={{ fontSize: '1.2rem', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>SplitEase</span>
+          <span style={{ fontSize: '1.2rem', fontWeight: 800, letterSpacing: '-0.02em' }}>SplitEase</span>
         </div>
 
         <div className="nav-tabs-desktop" style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
@@ -74,7 +74,7 @@ const LandingPage: React.FC = () => {
               marginBottom: '32px', boxShadow: 'var(--shadow-md)',
               animation: 'bounce 3s infinite'
             }}>
-              <Zap size={14} color="var(--warning)" fill="var(--warning)" />
+              <Activity size={14} color="var(--warning)" />
               <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
                 The Next Generation of Tracking
               </span>
@@ -102,10 +102,10 @@ const LandingPage: React.FC = () => {
           {/* Features Grid */}
           <div className="animate-entrance" style={{ animationDelay: '0.2s', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px', marginBottom: '120px' }}>
             {[
-              { icon: Zap, title: "Edge Performance", desc: "Global data synchronization in milliseconds using Supabase's high-speed architecture." },
+              { icon: Activity, title: "Edge Performance", desc: "Global data synchronization in milliseconds using Supabase's high-speed architecture." },
               { icon: Users, title: "Social Connect", desc: "A first-class social experience with friend requests and shared activity feeds." },
-              { icon: Shield, title: "Privacy First", desc: "Your data is encrypted and protected by robust Row Level Security policies." },
-              { icon: Activity, title: "Data Insights", desc: "Beautifully rendered charts and analytics to understand your group spending." }
+              { icon: Lock, title: "Privacy First", desc: "Your data is encrypted and protected by robust Row Level Security policies." },
+              { icon: CheckCircle, title: "Data Insights", desc: "Beautifully rendered charts and analytics to understand your group spending." }
             ].map((feature, idx) => (
               <div key={idx} className="glass card-hover" style={{ padding: '32px', borderRadius: 'var(--radius-xl)', border: '1px solid var(--border)' }}>
                 <div style={{ 
@@ -151,9 +151,8 @@ const LandingPage: React.FC = () => {
                 <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>Hamid Ali Khan (Kalhoro)</span>
               </div>
               <a href="https://instagram.com/hamidi_2005" target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-secondary)', textDecoration: 'none' }} className="footer-link">
-                <Instagram size={16} color="#E4405F" />
+                <MessageCircle size={16} color="#E4405F" />
                 <span style={{ fontSize: '0.9rem' }}>@hamidi_2005</span>
-                <ExternalLink size={12} style={{ opacity: 0.5 }} />
               </a>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-secondary)' }}>
                 <Phone size={16} color="#25D366" />
@@ -170,7 +169,7 @@ const LandingPage: React.FC = () => {
           <div>
             <h4 style={{ fontSize: '0.9rem', fontWeight: 800, marginBottom: '20px', color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Socials</h4>
             <div style={{ display: 'flex', gap: '12px' }}>
-              {[Github, Twitter, Instagram].map((Icon, i) => (
+              {[Code, Share2, MessageCircle].map((Icon, i) => (
                 <button key={i} className="icon-btn" style={{ width: '42px', height: '42px', borderRadius: '12px' }}>
                   <Icon size={18} />
                 </button>
