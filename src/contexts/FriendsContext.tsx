@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '../supabase/config';
 import { useAuth, type UserProfile } from './AuthContext';
-import { useNotifications } from './NotificationsContext';
 import { sendFriendRequestEmail } from '../services/emailService';
 import toast from 'react-hot-toast';
 
@@ -20,7 +19,6 @@ const FriendsContext = createContext<FriendsContextType | undefined>(undefined);
 
 export const FriendsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, userProfile } = useAuth();
-  const { addNotification } = useNotifications();
   const [friends, setFriends] = useState<UserProfile[]>([]);
   const [pendingRequests, setPendingRequests] = useState<UserProfile[]>([]);
   const [sentRequests, setSentRequests] = useState<UserProfile[]>([]);

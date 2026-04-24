@@ -14,8 +14,10 @@ import {
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 
+import { supabase } from '../supabase/config';
+
 const UserProfile: React.FC = () => {
-  const { user, userProfile, signOut } = useAuth();
+  const { user, userProfile, signOut, updateProfile } = useAuth();
   const { expenses, totalSpent, myBalance } = useData();
   const { friends, pendingRequests, sendFriendRequest, acceptFriendRequest, rejectFriendRequest } = useFriends();
   const { theme, toggleTheme } = useTheme();
@@ -52,10 +54,9 @@ const UserProfile: React.FC = () => {
     try {
       const fileExt = file.name.split('.').pop();
       const fileName = `${user.id}/${Math.random()}.${fileExt}`;
-      const filePath = `user_avatars/${fileName}`;
 
       // 1. Upload to Supabase Storage
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('avatars')
         .upload(fileName, file, { upsert: true });
 

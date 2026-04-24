@@ -217,7 +217,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     try {
       // Use the atomic RPC function for production-ready reliability
-      const { data: expenseId, error: rpcError } = await supabase
+      const { error: rpcError } = await supabase
         .rpc('add_expense_v3', {
           p_description: description,
           p_amount: amount,

@@ -38,7 +38,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchProfile = async (userId: string, retryCount = 0) => {
     try {
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('users')
         .select('*')
         .eq('id', userId)
@@ -167,22 +167,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const generateUniqueUsername = async (baseName: string): Promise<string> => {
-    let base = baseName
-      .toLowerCase()
-      .replace(/\s+/g, '_')
-      .replace(/[^a-z0-9_]/g, '');
-    if (base.length < 3) base = base + '_user';
-    let username = base;
-    let isAvailable = await checkUsernameAvailability(username);
-    let attempts = 0;
-    while (!isAvailable && attempts < 10) {
-      username = `${base}${Math.floor(Math.random() * 10000)}`;
-      isAvailable = await checkUsernameAvailability(username);
-      attempts++;
-    }
-    return username;
-  };
 
   const signInWithGoogle = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
