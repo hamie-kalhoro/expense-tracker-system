@@ -12,7 +12,8 @@ interface EmailPayload {
  */
 export const sendEmailViaBrevo = async (payload: EmailPayload): Promise<boolean> => {
   try {
-    const response = await fetch('http://localhost:3001/api/send-email', {
+    const API_URL = import.meta.env.VITE_EMAIL_SERVER_URL || 'http://localhost:3001';
+    const response = await fetch(`${API_URL}/api/send-email`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -43,7 +44,7 @@ export const sendEmailViaBrevo = async (payload: EmailPayload): Promise<boolean>
 export const sendWelcomeEmail = async (
   recipientEmail: string,
   username: string,
-  appUrl: string = 'http://localhost:5175'
+  appUrl: string = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5175'
 ) => {
   const htmlContent = `
     <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
@@ -101,7 +102,7 @@ export const sendFriendRequestEmail = async (
   recipientEmail: string,
   recipientUsername: string,
   senderUsername: string,
-  appUrl: string = 'http://localhost:5175'
+  appUrl: string = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5175'
 ) => {
   const htmlContent = `
     <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
@@ -142,7 +143,7 @@ export const sendFriendRequestEmail = async (
 export const sendJoinAppReminderEmail = async (
   recipientEmail: string,
   senderUsername: string,
-  appUrl: string = 'http://localhost:5175'
+  appUrl: string = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5175'
 ) => {
   const htmlContent = `
     <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
