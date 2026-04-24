@@ -6,6 +6,7 @@ import {
   User, ExternalLink, Code, Share2
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
+import WelcomeModal from './WelcomeModal';
 
 // Premium Instagram Icon with Gradient
 const InstagramIcon = ({ size = 20 }: { size?: number }) => (
@@ -31,6 +32,9 @@ const LandingPage: React.FC = () => {
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--page-gradient)' }}>
+      {/* Welcome Modal for New Users */}
+      <WelcomeModal />
+
       {/* Premium Navigation Bar */}
       <nav className="glass" style={{ 
         position: 'fixed', top: '20px', left: '50%', transform: 'translateX(-50%)',

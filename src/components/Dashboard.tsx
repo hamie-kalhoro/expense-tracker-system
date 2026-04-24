@@ -6,6 +6,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import AddExpenseModal from './AddExpenseModal';
 import FriendsModal from './FriendsModal';
 import NotificationsCenter from './NotificationsCenter';
+import ReviewModal from './ReviewModal';
 import {
   LogOut, Plus, Activity, Users, Wallet, DollarSign, Trash2,
   ArrowRight, CheckCircle, TrendingDown, CreditCard, Sun, Moon,
@@ -319,6 +320,7 @@ const Dashboard: React.FC = () => {
       {/* Modals */}
       <AddExpenseModal open={showAddExpense} onClose={() => setShowAddExpense(false)} friends={friends} />
       <FriendsModal open={showFriends} onClose={() => setShowFriends(false)} />
+      <ReviewModal />
     </div>
   );
 };
