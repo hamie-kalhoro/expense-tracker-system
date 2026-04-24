@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '../supabase/config';
 import { useAuth } from './AuthContext';
 import { useNotifications } from './NotificationsContext';
+import toast from 'react-hot-toast';
 
 export interface Expense {
   id: string;

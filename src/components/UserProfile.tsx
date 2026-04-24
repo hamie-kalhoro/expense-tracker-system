@@ -7,6 +7,7 @@ import FriendsModal from './FriendsModal';
 import AddExpenseModal from './AddExpenseModal';
 import NotificationsCenter from './NotificationsCenter';
 import {
+  User, Users, Wallet, DollarSign, Activity, Settings, LogOut, Sun, Moon,
   Send, CheckCircle, X, Clock, AtSign, ChevronRight, Plus, BarChart, UserPlus, Mail,
   ArrowRight, Edit3, Trash2, UserCheck, AlertCircle
 } from 'lucide-react';
