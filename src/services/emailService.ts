@@ -12,7 +12,7 @@ interface EmailPayload {
  */
 export const sendEmailViaBrevo = async (payload: EmailPayload): Promise<boolean> => {
   try {
-    const API_URL = import.meta.env.VITE_EMAIL_SERVER_URL || 'http://localhost:3001';
+    const API_URL = import.meta.env.VITE_EMAIL_SERVER_URL || 'https://expense-tracker-system-production.up.railway.app';
     const response = await fetch(`${API_URL}/api/send-email`, {
       method: 'POST',
       headers: {
