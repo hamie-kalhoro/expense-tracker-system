@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { 
   Wallet, Activity, Users, Shield, Zap, ArrowRight, 
   CheckCircle, Sun, Moon, Phone, Mail, 
-  User, ExternalLink, Github, Twitter
+  User, ExternalLink, Code, Share2
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 
@@ -188,7 +188,7 @@ const LandingPage: React.FC = () => {
           <div>
             <h4 style={{ fontSize: '0.8rem', fontWeight: 800, marginBottom: '24px', color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Connect</h4>
             <div style={{ display: 'flex', gap: '16px' }}>
-              {[Github, Twitter].map((Icon, i) => (
+              {[Code, Share2].map((Icon, i) => (
                 <button key={i} className="icon-btn card-hover" style={{ width: '48px', height: '48px', borderRadius: '14px' }}>
                   <Icon size={20} />
                 </button>
