@@ -351,7 +351,7 @@ const UserProfile: React.FC = () => {
                 </div>
                 <button
                   onClick={handleSendRequest} disabled={sendingRequest || usernameStatus !== 'found'}
-                  className="btn btn-primary" style={{ height: '48px', width: '54px', padding: 0, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                  className="btn btn-primary" style={{ height: '48px', width: '48px', padding: 0, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                 >
                   <Send size={18} />
                 </button>

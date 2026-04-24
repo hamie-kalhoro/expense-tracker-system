@@ -89,6 +89,8 @@ CREATE POLICY "Users can create friendships" ON public.friendships FOR INSERT
 WITH CHECK (auth.uid() = user_id1);
 CREATE POLICY "Receivers can update friendship status" ON public.friendships FOR UPDATE 
 USING (auth.uid() = user_id2);
+CREATE POLICY "Users can delete their friendships" ON public.friendships FOR DELETE 
+USING (auth.uid() = user_id1 OR auth.uid() = user_id2);
 
 -- Expenses (NON-RECURSIVE)
 CREATE POLICY "Users can view involved expenses" ON public.expenses FOR SELECT
@@ -96,10 +98,16 @@ USING (auth.uid() = paid_by OR auth.uid() = ANY(participants_uids));
 
 CREATE POLICY "Authenticated users can insert expenses" ON public.expenses FOR INSERT
 WITH CHECK (auth.role() = 'authenticated');
+CREATE POLICY "Payers can delete their expenses" ON public.expenses FOR DELETE
+USING (auth.uid() = paid_by);
 
 -- Participants (NON-RECURSIVE)
-CREATE POLICY "Users can view their own participant records" ON public.expense_participants FOR SELECT
-USING (user_id = auth.uid() OR expense_id IN (SELECT id FROM public.expenses WHERE paid_by = auth.uid()));
+CREATE POLICY "Users can view participants of their expenses" ON public.expense_participants FOR SELECT
+USING (
+  user_id = auth.uid() 
+  OR expense_id IN (SELECT id FROM public.expenses WHERE paid_by = auth.uid())
+  OR expense_id IN (SELECT id FROM public.expenses WHERE auth.uid() = ANY(participants_uids))
+);
 
 CREATE POLICY "Payer can add participants" ON public.expense_participants FOR INSERT
 WITH CHECK (true); -- Security handled by the add_expense_v3 function
@@ -108,6 +116,7 @@ WITH CHECK (true); -- Security handled by the add_expense_v3 function
 CREATE POLICY "Users can view own notifications" ON public.notifications FOR SELECT USING (auth.uid() = user_id);
 CREATE POLICY "Users can update own notifications" ON public.notifications FOR UPDATE USING (auth.uid() = user_id);
 CREATE POLICY "Users can create notifications for others" ON public.notifications FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+CREATE POLICY "Users can delete own notifications" ON public.notifications FOR DELETE USING (auth.uid() = user_id);
 
 -- ==========================================
 -- 4. Atomic Transaction Function (RPC)

@@ -137,7 +137,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { data: expensesData, error: expensesError } = await supabase
         .from('expenses')
         .select(`
-          id, description, amount, paid_by, category, created_at, group_id, expense_date,
+          id, description, amount, paid_by, category, created_at, group_id, expense_date, participants_uids,
           payer:users!paid_by ( username )
         `)
         .order('expense_date', { ascending: false });
@@ -166,10 +166,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const formattedExps: Expense[] = (expensesData || []).map((exp: any) => {
         // Find participants for this expense
         const parts = participantsData.filter(p => p.expense_id === exp.id);
-        const splitWithUid = parts.map(p => p.user_id);
-        const splitWithNames = parts.map(p => p.user?.username || 'Unknown');
+        const splitWithUid = parts.length > 0 ? parts.map(p => p.user_id) : (exp.participants_uids || []);
+        const splitWithNames = parts.length > 0 ? parts.map(p => p.user?.username || 'Unknown') : splitWithUid.map(() => 'User');
         
-        // Ensure payer is in the split if they were part of the participants (which they usually are)
         return {
           id: exp.id,
           description: exp.description,
