@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useData } from '../contexts/DataContext';
 import { useFriends } from '../contexts/FriendsContext';
@@ -7,9 +7,8 @@ import FriendsModal from './FriendsModal';
 import AddExpenseModal from './AddExpenseModal';
 import NotificationsCenter from './NotificationsCenter';
 import {
-  User, Users, Wallet, DollarSign, Activity, Settings, LogOut, Sun, Moon,
   Send, CheckCircle, X, Clock, AtSign, ChevronRight, Plus, BarChart, UserPlus, Mail,
-  ArrowRight, Edit3, Trash2
+  ArrowRight, Edit3, Trash2, UserCheck, AlertCircle
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
@@ -19,7 +18,7 @@ import { supabase } from '../supabase/config';
 const UserProfile: React.FC = () => {
   const { user, userProfile, signOut, updateProfile } = useAuth();
   const { expenses, totalSpent, myBalance } = useData();
-  const { friends, pendingRequests, sendFriendRequest, acceptFriendRequest, rejectFriendRequest } = useFriends();
+  const { friends, pendingRequests, sendFriendRequest, acceptFriendRequest, rejectFriendRequest, getFriendByUsername } = useFriends();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
 
@@ -27,6 +26,30 @@ const UserProfile: React.FC = () => {
   const [showAddExpense, setShowAddExpense] = useState(false);
   const [friendUsername, setFriendUsername] = useState('');
   const [sendingRequest, setSendingRequest] = useState(false);
+  const [usernameStatus, setUsernameStatus] = useState<'idle' | 'checking' | 'found' | 'not-found'>('idle');
+
+  useEffect(() => {
+    if (!friendUsername.trim() || friendUsername.length < 3) {
+      setUsernameStatus('idle');
+      return;
+    }
+
+    setUsernameStatus('checking');
+    const timeOutId = setTimeout(async () => {
+      try {
+        const friend = await getFriendByUsername(friendUsername.trim().toLowerCase());
+        if (friend) {
+          setUsernameStatus('found');
+        } else {
+          setUsernameStatus('not-found');
+        }
+      } catch {
+        setUsernameStatus('idle');
+      }
+    }, 500);
+
+    return () => clearTimeout(timeOutId);
+  }, [friendUsername, getFriendByUsername]);
   
   // Profile Edit State
   const [isEditingBio, setIsEditingBio] = useState(false);
@@ -300,19 +323,34 @@ const UserProfile: React.FC = () => {
             <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '24px' }}>Network Hub</h3>
             <div className="glass" style={{ padding: '24px', borderRadius: 'var(--radius-lg)' }}>
               <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, marginBottom: '12px', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Expand Circle</label>
-              <div style={{ display: 'flex', gap: '10px', marginBottom: '32px' }}>
-                <div style={{ position: 'relative', flex: 1 }}>
-                  <AtSign size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+              <div style={{ display: 'flex', gap: '10px', marginBottom: '32px', alignItems: 'flex-start' }}>
+                <div style={{ position: 'relative', flex: 1, minWidth: 0 }}>
+                  <AtSign size={18} style={{ position: 'absolute', left: '16px', top: '24px', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                   <input
                     type="text" value={friendUsername}
                     onChange={(e) => setFriendUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
                     placeholder="username" className="input-field"
-                    style={{ paddingLeft: '48px', height: '48px', fontSize: '0.9rem' }}
+                    style={{ 
+                      paddingLeft: '48px', height: '48px', fontSize: '0.9rem', width: '100%',
+                      borderColor: usernameStatus === 'found' ? 'var(--success)' : usernameStatus === 'not-found' ? 'var(--warning)' : 'var(--border)'
+                    }}
+                    onKeyDown={(e) => { if (e.key === 'Enter' && usernameStatus === 'found') handleSendRequest(); }}
                   />
+                  {usernameStatus !== 'idle' && (
+                    <p style={{ 
+                      margin: '8px 0 0 4px', fontSize: '0.7rem', fontWeight: 600,
+                      color: usernameStatus === 'checking' ? 'var(--text-muted)' : usernameStatus === 'found' ? 'var(--success)' : 'var(--warning)',
+                      display: 'flex', alignItems: 'center', gap: '4px'
+                    }}>
+                      {usernameStatus === 'checking' && 'Checking...'}
+                      {usernameStatus === 'found' && <><UserCheck size={12} /> User found!</>}
+                      {usernameStatus === 'not-found' && <><AlertCircle size={12} /> Not found.</>}
+                    </p>
+                  )}
                 </div>
                 <button
-                  onClick={handleSendRequest} disabled={sendingRequest || !friendUsername.trim()}
-                  className="btn btn-primary" style={{ padding: '0 16px', height: '48px' }}
+                  onClick={handleSendRequest} disabled={sendingRequest || usernameStatus !== 'found'}
+                  className="btn btn-primary" style={{ padding: '0 24px', height: '48px', flexShrink: 0 }}
                 >
                   <Send size={18} />
                 </button>
