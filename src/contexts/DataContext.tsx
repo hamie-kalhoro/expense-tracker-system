@@ -212,50 +212,46 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Ensure the payer (current user) is ALWAYS included as a participant for balance tracking
     const finalParticipantUids = Array.from(new Set([...participantUids, user.id]));
 
-    // 1. Insert expense
-    const { data: expData, error: expError } = await supabase
-      .from('expenses')
-      .insert({
-        description,
-        amount,
-        paid_by: user.id,
-        category: category || 'other',
-        expense_date: date
-      })
-      .select('id')
-      .single();
+    // Calculate individual share for the notification message
+    const shareAmount = amount / finalParticipantUids.length;
 
-    if (expError || !expData) {
-      throw new Error(expError?.message || "Failed to create expense record");
-    }
+    try {
+      // Use the atomic RPC function for production-ready reliability
+      const { data: expenseId, error: rpcError } = await supabase
+        .rpc('add_expense_v3', {
+          p_description: description,
+          p_amount: amount,
+          p_category: category || 'other',
+          p_expense_date: date,
+          p_participant_uids: finalParticipantUids
+        });
 
-    // 2. Insert participants
-    const participants = finalParticipantUids.map(uid => ({
-      expense_id: expData.id,
-      user_id: uid
-    }));
+      if (rpcError) {
+        throw new Error(rpcError.message || "Failed to create expense via RPC");
+      }
 
-    const { error: partError } = await supabase
-      .from('expense_participants')
-      .insert(participants);
-      
-    if (partError) {
-      console.error(partError);
-    } else {
       // 3. Send notifications to all other participants (except the payer)
-      finalParticipantUids.forEach(uid => {
+      // Logic remains the same, triggered after successful atomic insert
+      finalParticipantUids.forEach(async (uid) => {
         if (uid !== user.id) {
-          addNotification({
-            userId: uid,
-            type: 'expense-added',
-            title: 'New Expense',
-            message: `${userProfile.username} added "${description}" on ${new Date(date).toLocaleDateString()}`,
-            fromName: userProfile.username,
-            fromUid: user.id,
-            actionUrl: '/dashboard'
-          });
+          try {
+            await addNotification({
+              userId: uid,
+              type: 'expense-added',
+              title: 'New Shared Expense 💸',
+              message: `${userProfile.username} added "${description}" - Your share: $${shareAmount.toFixed(2)}`,
+              fromName: userProfile.username,
+              fromUid: user.id,
+              actionUrl: '/dashboard'
+            });
+          } catch (notifyError) {
+            console.warn('Notification failed for user:', uid, notifyError);
+          }
         }
       });
+    } catch (err: any) {
+      console.error('Supabase addExpense error:', err);
+      throw err; // Re-throw to be caught by the UI
     }
   };
 

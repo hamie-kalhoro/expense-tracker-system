@@ -174,7 +174,7 @@ const Auth: React.FC = () => {
           maxWidth: '1000px',
           width: '100%',
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
           borderRadius: 'var(--radius-xl)',
           overflow: 'hidden',
           boxShadow: 'var(--shadow-xl)',
@@ -182,10 +182,10 @@ const Auth: React.FC = () => {
           border: '1px solid var(--border)',
         }}
       >
-        {/* Left Side: Brand/Visuals (Hidden on small screens via grid mapping) */}
-        <div style={{
-          padding: '60px',
-          background: 'linear-gradient(225deg, #4f46e5 0%, #7c3aed 100%)',
+        {/* Left Side: Brand/Visuals (Hidden on mobile) */}
+        <div className="nav-tabs" style={{
+          padding: 'clamp(40px, 8vw, 60px)',
+          background: 'linear-gradient(225deg, #4f46e5 0%, #7626e8 100%)',
           color: 'white',
           display: 'flex',
           flexDirection: 'column',
@@ -209,23 +209,23 @@ const Auth: React.FC = () => {
             }}>
               <Wallet size={32} />
             </div>
-            <h2 style={{ fontSize: '2.5rem', fontWeight: 800, marginBottom: '16px', lineHeight: 1.1 }}>
-              Master your <br /> 
-              <span style={{ color: '#f9a8d4' }}>shared expenses.</span>
+            <h2 style={{ fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', fontWeight: 800, marginBottom: '16px', lineHeight: 1.1 }}>
+              Secure your <br /> 
+              <span className="text-glow">finances.</span>
             </h2>
-            <p style={{ fontSize: '1.125rem', opacity: 0.9, lineHeight: 1.6, maxWidth: '320px' }}>
-              SplitEase helps you track, split, and settle debts with friends in seconds.
+            <p style={{ fontSize: '1rem', opacity: 0.8, lineHeight: 1.6, maxWidth: '320px' }}>
+              SplitEase helps you track, split, and settle debts with friends in a secure, aesthetic environment.
             </p>
 
-            <div style={{ marginTop: '48px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div style={{ marginTop: '40px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
               {[
-                { icon: CheckCircle, text: 'Real-time settlement tracking' },
-                { icon: Activity, text: 'Detailed expense insights' },
-                { icon: Users, text: 'Unlimited group members' }
+                { icon: CheckCircle, text: 'Real-time settlement' },
+                { icon: Activity, text: 'Expense analytics' },
+                { icon: Users, text: 'Social networking' }
               ].map((item, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <item.icon size={20} />
-                  <span style={{ fontSize: '0.9rem', fontWeight: 500 }}>{item.text}</span>
+                  <item.icon size={18} />
+                  <span style={{ fontSize: '0.85rem', fontWeight: 500 }}>{item.text}</span>
                 </div>
               ))}
             </div>
@@ -234,16 +234,16 @@ const Auth: React.FC = () => {
 
         {/* Right Side: Forms */}
         <div style={{
-          padding: '60px 48px',
+          padding: 'clamp(32px, 6vw, 60px) clamp(24px, 5vw, 48px)',
           background: 'var(--bg-card)',
           position: 'relative'
         }}>
           <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-            <h1 style={{ fontSize: '2rem', fontWeight: 800, marginBottom: '8px' }}>
-              {isLogin ? 'Welcome back' : 'Create account'}
+            <h1 style={{ fontSize: 'clamp(1.5rem, 4vw, 2rem)', fontWeight: 800, marginBottom: '8px' }}>
+              {isLogin ? 'Access Portal' : 'Register Now'}
             </h1>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-              {isLogin ? "We've missed you! Please log in." : "Start your journey with SplitEase today."}
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+              {isLogin ? "Welcome back to your financial hub." : "Start your professional tracking today."}
             </p>
           </div>
 

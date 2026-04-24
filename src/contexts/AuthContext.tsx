@@ -9,6 +9,7 @@ export interface UserProfile {
   displayName: string;
   username: string;
   photoURL?: string;
+  bio?: string;
   createdAt: string;
 }
 
@@ -19,6 +20,7 @@ interface AuthContextType {
   signInWithGoogle: () => Promise<void>;
   signInWithEmail: (email: string, password: string) => Promise<void>;
   signUpWithEmail: (email: string, password: string, username: string) => Promise<any>;
+  updateProfile: (updates: { displayName?: string, photoURL?: string, bio?: string }) => Promise<void>;
   signOut: () => Promise<void>;
   isMockMode: boolean; // Retained so UI code logic rarely changes, but effectively unused
   checkUsernameAvailability: (username: string) => Promise<boolean>;
@@ -49,6 +51,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           displayName: data.display_name,
           username: data.username,
           photoURL: data.photo_url || undefined,
+          bio: data.bio || undefined,
           createdAt: data.created_at,
         });
 
@@ -132,6 +135,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               displayName: data.display_name,
               username: data.username,
               photoURL: data.photo_url || undefined,
+              bio: data.bio || undefined,
               createdAt: data.created_at,
             });
             setLoading(false); // Stop loading if this was the first time we got the profile
@@ -239,9 +243,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUserProfile(null);
   };
 
+  const updateProfile = async (updates: { displayName?: string, photoURL?: string, bio?: string }) => {
+    if (!user) throw new Error("No authenticated user");
+    
+    const dbUpdates: any = {};
+    if (updates.displayName !== undefined) dbUpdates.display_name = updates.displayName;
+    if (updates.photoURL !== undefined) dbUpdates.photo_url = updates.photoURL;
+    if (updates.bio !== undefined) dbUpdates.bio = updates.bio;
+
+    const { error } = await supabase
+      .from('users')
+      .update(dbUpdates)
+      .eq('id', user.id);
+
+    if (error) throw error;
+  };
+
   return (
     <AuthContext.Provider
-      value={{ user, userProfile, loading, signInWithGoogle, signInWithEmail, signUpWithEmail, signOut, isMockMode, checkUsernameAvailability }}
+      value={{ user, userProfile, loading, signInWithGoogle, signInWithEmail, signUpWithEmail, updateProfile, signOut, isMockMode, checkUsernameAvailability }}
     >
       {!loading && children}
     </AuthContext.Provider>

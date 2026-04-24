@@ -57,6 +57,11 @@ const App = () => {
           <DataProvider>
             <FriendsProvider>
               <Router>
+                <div className="bg-animation">
+                  <div className="bg-blob blob-1"></div>
+                  <div className="bg-blob blob-2"></div>
+                  <div className="bg-blob blob-3"></div>
+                </div>
                 <AppRoutes />
                 <Toaster
                   position="bottom-center"

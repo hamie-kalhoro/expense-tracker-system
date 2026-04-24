@@ -120,13 +120,13 @@ const NotificationsCenter: React.FC = () => {
                     background: notif.read ? 'transparent' : 'var(--bg-elevated)',
                     transition: 'background 0.2s', position: 'relative',
                   }}
-                  onMouseEnter={(e) => { (e.currentTarget.querySelector('.notif-delete-btn') as HTMLElement)!.style.opacity = '1'; }}
-                  onMouseLeave={(e) => { (e.currentTarget.querySelector('.notif-delete-btn') as HTMLElement)!.style.opacity = '0'; }}
+                    onMouseEnter={(e) => { (e.currentTarget.querySelector('.notif-delete-btn') as HTMLElement)!.style.opacity = '1'; }}
+                    onMouseLeave={(e) => { (e.currentTarget.querySelector('.notif-delete-btn') as HTMLElement)!.style.opacity = '0'; }}
                   >
                     {!notif.read && (
                       <div style={{ position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)', width: '6px', height: '6px', borderRadius: '50%', background: 'var(--accent-1)' }} />
                     )}
-                    
+
                     <button
                       className="notif-delete-btn"
                       onClick={() => removeNotification(notif.id)}

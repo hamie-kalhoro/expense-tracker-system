@@ -92,73 +92,64 @@ const FriendsModal: React.FC<FriendsModalProps> = ({ open, onClose }) => {
         display: 'flex', flexDirection: 'column', position: 'relative'
       }}>
         {/* Header */}
-        <div style={{ padding: '32px 32px 20px', position: 'relative', borderBottom: '1px solid var(--border-subtle)' }}>
+        <div style={{ padding: 'clamp(20px, 5vw, 32px) clamp(20px, 5vw, 32px) 20px', position: 'relative', borderBottom: '1px solid var(--border-subtle)' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <div style={{ width: '40px', height: '40px', background: 'var(--accent-gradient)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px var(--accent-glow)' }}>
                 <Users size={20} color="white" />
               </div>
-              <h2 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 800 }}>Inner Circle</h2>
+              <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800 }}>Inner Circle</h2>
             </div>
             <button onClick={onClose} className="icon-btn" style={{ background: 'transparent', border: 'none' }}><X size={20} /></button>
           </div>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0 }}>Manage your connections and split expenses easily.</p>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', margin: 0 }}>Manage your network and shared payments.</p>
         </div>
 
         {/* Content */}
-        <div style={{ padding: '32px', overflowY: 'auto', flex: 1 }}>
+        <div style={{ padding: 'clamp(20px, 5vw, 32px)', overflowY: 'auto', flex: 1, scrollbarWidth: 'none' }}>
           {/* Add Friend Input */}
           <div style={{ marginBottom: '32px' }}>
-            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '12px', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Add by Username</label>
-            <div style={{ display: 'flex', gap: '12px' }}>
+            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, marginBottom: '12px', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Add by Username</label>
+            <div style={{ display: 'flex', gap: '10px' }}>
               <div style={{ position: 'relative', flex: 1 }}>
                 <AtSign size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
                 <input
                   type="text" value={username}
                   onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
-                  placeholder="enter_username" className="input-field"
+                  placeholder="username" className="input-field"
                   style={{ 
-                    paddingLeft: '48px', height: '52px', fontSize: '1rem',
+                    paddingLeft: '48px', height: '48px', fontSize: '0.95rem',
                     borderColor: usernameStatus === 'found' ? 'var(--success)' : usernameStatus === 'not-found' ? 'var(--warning)' : 'var(--border)'
                   }}
                   onKeyDown={(e) => { if (e.key === 'Enter' && usernameStatus === 'found') handleSendRequest(); }}
                 />
-                {usernameStatus === 'checking' && (
-                  <div style={{ position: 'absolute', right: '16px', top: '50%', transform: 'translateY(-50%)' }}>
-                    <div className="spinner" style={{ width: '18px', height: '18px' }} />
-                  </div>
-                )}
               </div>
               <button
                 onClick={handleSendRequest} disabled={loading || usernameStatus !== 'found'}
-                className="btn btn-primary" style={{ height: '52px', padding: '0 24px' }}
+                className="btn btn-primary" style={{ height: '48px', padding: '0 20px' }}
               >
-                {loading ? '...' : <Send size={18} />}
+                <Send size={18} />
               </button>
             </div>
-            {usernameStatus === 'found' && foundUser && (
-              <div className="animate-slide-down" style={{ marginTop: '12px', padding: '12px 16px', background: 'var(--success-bg)', color: 'var(--success)', borderRadius: 'var(--radius-md)', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <CheckCircle size={16} /> User Found: {foundUser.displayName} (@{foundUser.username})
-              </div>
-            )}
           </div>
 
           {/* Premium Tabs */}
-          <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', background: 'var(--bg-elevated)', padding: '6px', borderRadius: 'var(--radius-md)' }}>
+          <div style={{ display: 'flex', gap: '4px', marginBottom: '24px', background: 'var(--bg-elevated)', padding: '4px', borderRadius: 'var(--radius-md)', overflowX: 'auto', scrollbarWidth: 'none' }}>
             {tabs.map(tab => (
               <button
                 key={tab.id} onClick={() => setActiveTab(tab.id)}
                 style={{
-                  flex: 1, padding: '12px', border: 'none', borderRadius: 'var(--radius-sm)',
+                  flex: 1, padding: '10px 8px', border: 'none', borderRadius: '6px',
                   background: activeTab === tab.id ? 'var(--bg-card)' : 'transparent',
                   color: activeTab === tab.id ? 'var(--accent-1)' : 'var(--text-muted)',
-                  fontWeight: 700, cursor: 'pointer', transition: 'all 0.3s',
-                  fontSize: '0.8rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                  boxShadow: activeTab === tab.id ? 'var(--shadow-sm)' : 'none'
+                  fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s',
+                  fontSize: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                  boxShadow: activeTab === tab.id ? 'var(--shadow-sm)' : 'none',
+                  minWidth: '94px'
                 }}
               >
-                {tab.icon} {tab.label}
-                {tab.count > 0 && <span style={{ background: 'var(--accent-1)', color: 'white', padding: '2px 8px', borderRadius: 'var(--radius-full)', fontSize: '0.7rem' }}>{tab.count}</span>}
+                {tab.label}
+                {tab.count > 0 && <span style={{ background: 'var(--accent-1)', color: 'white', padding: '1px 6px', borderRadius: 'var(--radius-full)', fontSize: '0.65rem' }}>{tab.count}</span>}
               </button>
             ))}
           </div>
