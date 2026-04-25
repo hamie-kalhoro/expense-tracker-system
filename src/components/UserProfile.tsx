@@ -121,7 +121,8 @@ const UserProfile: React.FC = () => {
     }
   };
 
-  const username = userProfile?.username || user?.user_metadata?.full_name || 'user';
+  const username = userProfile?.username || 'user';
+  const displayName = userProfile?.displayName || user?.user_metadata?.full_name || 'SplitEase User';
   const email = userProfile?.email || user?.email || '';
   const joinDate = userProfile?.createdAt
     ? new Date(userProfile.createdAt as any).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
@@ -221,9 +222,26 @@ const UserProfile: React.FC = () => {
           </div>
 
           <div style={{ flex: '1 1 300px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '8px', flexWrap: 'wrap' }}>
-              <h2 style={{ fontSize: 'clamp(1.5rem, 5vw, 2.5rem)', fontWeight: 800, margin: 0 }}>@{username}</h2>
-              <span className="badge badge-accent" style={{ padding: '6px 16px' }}>Pro</span>
+            <div style={{ marginBottom: '8px' }}>
+              <h1 style={{ 
+                fontSize: 'clamp(1.75rem, 6vw, 3rem)', 
+                fontWeight: 900, 
+                margin: 0, 
+                lineHeight: 1.1,
+                letterSpacing: '-0.02em',
+                color: 'var(--text-primary)'
+              }}>
+                {displayName}
+              </h1>
+              <h2 style={{ 
+                fontSize: 'clamp(1.1rem, 4vw, 1.5rem)', 
+                fontWeight: 600, 
+                margin: '4px 0 0', 
+                color: 'var(--accent-1)',
+                opacity: 0.9
+              }}>
+                @{username}
+              </h2>
             </div>
             <p style={{ fontSize: '1rem', color: 'var(--text-muted)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Mail size={18} /> {email}
