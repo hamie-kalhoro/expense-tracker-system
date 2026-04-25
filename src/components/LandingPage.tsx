@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
 import { 
   Wallet, Activity, Users, Shield, Zap, ArrowRight, 
   CheckCircle, Sun, Moon, Phone, Mail, 
@@ -43,6 +44,45 @@ const InstagramIcon = ({ size = 20 }: { size?: number }) => (
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
+
+  const [stats, setStats] = useState({
+    users: 24000,
+    rating: 4.9,
+    expenses: 2000000
+  });
+
+  useEffect(() => {
+    async function fetchStats() {
+      try {
+        let newUsers = 24000;
+        let newExpenses = 2000000;
+
+        const { count: uCount } = await supabase.from('profiles').select('*', { count: 'exact', head: true });
+        if (uCount) newUsers += uCount;
+
+        const { data: expData } = await supabase.from('expenses').select('amount');
+        if (expData) {
+          const sum = expData.reduce((acc: number, curr: any) => acc + (Number(curr.amount) || 0), 0);
+          newExpenses += sum;
+        }
+
+        setStats({
+          users: newUsers,
+          rating: 4.9,
+          expenses: newExpenses
+        });
+      } catch (err) {
+        console.error("Error fetching stats:", err);
+      }
+    }
+    fetchStats();
+  }, []);
+
+  const formatNumber = (num: number, isCurrency: boolean) => {
+    if (num >= 1000000) return `${isCurrency ? '$' : ''}${(num / 1000000).toFixed(1)}M+`;
+    if (num >= 1000) return `${isCurrency ? '$' : ''}${(num / 1000).toFixed(1)}K+`;
+    return `${isCurrency ? '$' : ''}${num.toString()}`;
+  };
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--page-gradient)' }}>
@@ -165,7 +205,7 @@ const LandingPage: React.FC = () => {
           }}>
             <div className="stat-item" style={{ textAlign: 'center' }}>
               <div className="stat-number gradient-text" style={{ fontWeight: 900, lineHeight: 1 }}>
-                24K+
+                {formatNumber(stats.users, false)}
               </div>
               <p className="stat-label">Active Users</p>
             </div>
@@ -174,7 +214,7 @@ const LandingPage: React.FC = () => {
             
             <div className="stat-item" style={{ textAlign: 'center' }}>
               <div className="stat-number" style={{ fontWeight: 900, color: 'var(--warning)', lineHeight: 1 }}>
-                4.9
+                {stats.rating}
               </div>
               <p className="stat-label">Average Rating</p>
               <div style={{ display: 'flex', justifyContent: 'center', gap: '4px', marginTop: '8px' }}>
@@ -186,7 +226,7 @@ const LandingPage: React.FC = () => {
             
             <div className="stat-item" style={{ textAlign: 'center' }}>
               <div className="stat-number" style={{ fontWeight: 900, color: 'var(--success)', lineHeight: 1 }}>
-                $2M+
+                {formatNumber(stats.expenses, true)}
               </div>
               <p className="stat-label">Expenses Split</p>
             </div>
