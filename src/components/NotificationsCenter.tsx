@@ -77,12 +77,18 @@ const NotificationsCenter: React.FC = () => {
       {/* Dropdown Menu */}
       {isOpen && (
         <div style={{
-          position: 'absolute', top: 'calc(100% + 8px)', right: 0,
-          width: '340px', background: 'var(--bg-modal)',
+          position: window.innerWidth <= 600 ? 'fixed' : 'absolute', 
+          top: window.innerWidth <= 600 ? '80px' : 'calc(100% + 8px)', 
+          right: window.innerWidth <= 600 ? '20px' : 0,
+          left: window.innerWidth <= 600 ? '20px' : 'auto',
+          width: window.innerWidth <= 600 ? 'auto' : '340px',
+          background: 'var(--bg-modal)',
           backdropFilter: 'blur(20px)', border: '1px solid var(--border)',
           borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-xl)',
-          zIndex: 100, transformOrigin: 'top right', animation: 'scaleIn 0.2s ease',
+          zIndex: 1000, transformOrigin: window.innerWidth <= 600 ? 'top' : 'top right', 
+          animation: 'scaleIn 0.2s ease',
           overflow: 'hidden', display: 'flex', flexDirection: 'column',
+          maxHeight: window.innerWidth <= 600 ? 'calc(100vh - 120px)' : 'none'
         }}>
           {/* Header */}
           <div style={{
