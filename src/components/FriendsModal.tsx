@@ -181,7 +181,10 @@ const FriendsModal: React.FC<FriendsModalProps> = ({ open, onClose }) => {
                         <div className="avatar avatar-md">{friend.username[0]}</div>
                         <div>
                           <p style={{ margin: 0, fontWeight: 700, fontSize: '0.9rem' }}>{friend.displayName}</p>
-                          <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)' }}>@{friend.username}</p>
+                          <p style={{ margin: 0, fontSize: '0.7rem', color: 'var(--accent-1)', fontWeight: 600 }}>@{friend.username}</p>
+                          <p style={{ margin: '4px 0 0', fontSize: '0.75rem', color: 'var(--text-secondary)', fontStyle: 'italic', opacity: 0.8 }}>
+                            {friend.bio ? `"${friend.bio}"` : "No bio added yet."}
+                          </p>
                         </div>
                       </div>
                       <button onClick={() => removeFriend(friend.uid)} className="icon-btn" style={{ background: 'var(--error-bg)', color: 'var(--error)' }}><UserMinus size={16} /></button>

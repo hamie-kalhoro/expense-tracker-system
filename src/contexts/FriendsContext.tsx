@@ -33,8 +33,8 @@ export const FriendsProvider: React.FC<{ children: React.ReactNode }> = ({ child
           status,
           user_id1,
           user_id2,
-          user1:users!user_id1 ( id, username, display_name, photo_url, email, created_at ),
-          user2:users!user_id2 ( id, username, display_name, photo_url, email, created_at )
+          user1:users!user_id1 ( id, username, display_name, photo_url, email, created_at, bio ),
+          user2:users!user_id2 ( id, username, display_name, photo_url, email, created_at, bio )
         `)
         .or(`user_id1.eq.${user.id},user_id2.eq.${user.id}`);
 
@@ -56,6 +56,7 @@ export const FriendsProvider: React.FC<{ children: React.ReactNode }> = ({ child
           displayName: otherUser.display_name,
           email: otherUser.email,
           photoURL: otherUser.photo_url || undefined,
+          bio: otherUser.bio || undefined,
           createdAt: otherUser.created_at
         };
 
@@ -100,7 +101,7 @@ export const FriendsProvider: React.FC<{ children: React.ReactNode }> = ({ child
     try {
       const { data } = await supabase
         .from('users')
-        .select('id, username, display_name, email')
+        .select('id, username, display_name, email, bio')
         .eq('username', clean)
         .single();
         
@@ -109,7 +110,8 @@ export const FriendsProvider: React.FC<{ children: React.ReactNode }> = ({ child
           uid: data.id,
           username: data.username,
           displayName: data.display_name,
-          email: data.email
+          email: data.email,
+          bio: data.bio || undefined
         };
       }
       return null;
