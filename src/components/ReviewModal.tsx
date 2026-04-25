@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { useData } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../supabase/supabaseClient';
 
 const REVIEW_KEY = 'splitease_review_submitted';
 const REVIEW_DISMISSED_KEY = 'splitease_review_dismissed';
