@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Play, Info, CheckCircle, Zap, AlertCircle } from 'lucide-react';
 // Using the public folder path for production availability
-const demoVideoPath = "/demo_video/demo-walkthrough.mp4";
+const demoVideoPath = "/video/demo-walkthrough.mp4";
 
 interface DemoVideoModalProps {
   isOpen: boolean;
@@ -11,11 +11,13 @@ interface DemoVideoModalProps {
 const DemoVideoModal: React.FC<DemoVideoModalProps> = ({ isOpen, onClose }) => {
   const [isExiting, setIsExiting] = useState(false);
   const [videoError, setVideoError] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
-      setVideoError(false); // Reset error state when opening
+      setVideoError(false);
+      setIsLoading(true);
     } else {
       document.body.style.overflow = 'unset';
     }
@@ -113,34 +115,56 @@ const DemoVideoModal: React.FC<DemoVideoModalProps> = ({ isOpen, onClose }) => {
           </button>
         </div>
 
-        {/* Video Player */}
-        <div style={{ 
-          position: 'relative', 
-          width: '100%', 
+        {/* Video Player Area */}
+        <div style={{
+          position: 'relative',
+          width: '100%',
           aspectRatio: '16/9',
           background: '#000',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
         }}>
+          {isLoading && !videoError && (
+            <div style={{ position: 'absolute', zIndex: 10, textAlign: 'center' }}>
+              <div className="spinner" style={{ width: '40px', height: '40px', borderTopColor: 'var(--accent-1)', margin: '0 auto 16px auto' }}></div>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Buffering Walkthrough...</p>
+            </div>
+          )}
+
           {videoError ? (
-            <div style={{ textAlign: 'center', padding: '40px' }}>
+            <div style={{ textAlign: 'center', padding: '40px', zIndex: 20 }}>
               <AlertCircle size={48} color="var(--error)" style={{ marginBottom: '16px' }} />
-              <h4 style={{ color: 'white', marginBottom: '8px' }}>Demo Video Unavailable</h4>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', maxWidth: '400px' }}>
-                The demo video file is too large for GitHub hosting. For the full experience, please host the video externally or view it in the local development environment.
+              <h4 style={{ color: 'white', marginBottom: '8px' }}>Unable to Play Video</h4>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', maxWidth: '400px', margin: '0 auto 20px auto' }}>
+                We encountered an issue loading the demo video. This could be due to file size, format support, or a connection timeout.
               </p>
+              <button 
+                className="btn glass" 
+                onClick={() => { setVideoError(false); setIsLoading(true); }}
+                style={{ padding: '8px 20px', fontSize: '0.85rem', color: 'white' }}
+              >
+                Try Again
+              </button>
             </div>
           ) : (
             <video
               src={demoVideoPath}
               controls
               autoPlay
-              onError={() => setVideoError(true)}
+              muted
+              playsInline
+              onCanPlay={() => setIsLoading(false)}
+              onError={() => {
+                setVideoError(true);
+                setIsLoading(false);
+              }}
               style={{
                 width: '100%',
                 height: '100%',
                 objectFit: 'contain',
+                opacity: isLoading ? 0 : 1,
+                transition: 'opacity 0.3s ease',
               }}
             />
           )}
