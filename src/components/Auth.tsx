@@ -175,12 +175,12 @@ const Auth: React.FC = () => {
       {/* Theme toggle */}
       <button
         onClick={toggleTheme}
-        className="glass"
+        className="glass theme-spin"
         style={{
           position: 'absolute', top: '24px', right: '24px',
           borderRadius: 'var(--radius-md)', padding: '12px',
           cursor: 'pointer', color: 'var(--text-primary)',
-          zIndex: 50, display: 'flex', transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          zIndex: 50, display: 'flex'
         }}
       >
         {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}

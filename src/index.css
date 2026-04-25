@@ -434,6 +434,38 @@ a {
 }
 
 /* New Utilities */
+@keyframes spinTheme {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(180deg); }
+}
+.theme-spin {
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.theme-spin:hover, .theme-spin:active {
+  transform: rotate(180deg);
+}
+
+.theme-toggle-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+@media (max-width: 480px) {
+  .theme-toggle-wrapper {
+    gap: 8px !important;
+  }
+  .theme-toggle-wrapper .btn-primary {
+    padding: 6px 14px !important;
+    font-size: 0.75rem !important;
+    border-radius: 10px !important;
+  }
+  .theme-toggle-wrapper .theme-spin {
+    width: 34px !important;
+    height: 34px !important;
+    border-radius: 10px !important;
+  }
+}
 .divider {
   display: flex;
   align-items: center;

@@ -115,7 +115,7 @@ const Dashboard: React.FC = () => {
               </button>
             </div>
             
-            <button onClick={toggleTheme} className="icon-btn" style={{ width: '40px', height: '40px' }}>
+            <button onClick={toggleTheme} className="icon-btn theme-spin" style={{ width: '40px', height: '40px' }}>
               {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
             </button>
           </div>

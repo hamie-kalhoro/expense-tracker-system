@@ -73,16 +73,16 @@ const LandingPage: React.FC = () => {
           <span className="nav-link" onClick={() => alert("SplitEase is 100% free forever! No pricing tiers, no hidden fees.")}>Pricing</span>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <button onClick={toggleTheme} className="icon-btn" style={{ borderRadius: '12px', width: '40px', height: '40px' }}>
-            {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
-          </button>
+        <div className="theme-toggle-wrapper">
           <button 
             onClick={() => navigate('/login')}
             className="btn btn-primary" 
             style={{ padding: '8px 24px', fontSize: '0.85rem', borderRadius: '14px', fontWeight: 700 }}
           >
             Get Started
+          </button>
+          <button onClick={toggleTheme} className="icon-btn theme-spin" style={{ borderRadius: '12px', width: '40px', height: '40px' }}>
+            {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
           </button>
         </div>
       </nav>
