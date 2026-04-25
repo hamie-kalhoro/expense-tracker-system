@@ -262,7 +262,7 @@ const LandingPage: React.FC = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-secondary)' }}>
                 <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--accent-gradient)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 800, fontSize: '0.7rem' }}>HK</div>
-                <span style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)' }}>Hamid Ali Khan (Kalhoro)</span>
+                <span style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)' }}>Hamid Ali (Kalhoro)</span>
               </div>
               <a href="https://www.instagram.com/hamidi_2oo5/" target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-secondary)', textDecoration: 'none' }} className="footer-link">
                 <InstagramIcon size={20} />
@@ -284,7 +284,7 @@ const LandingPage: React.FC = () => {
               </a>
               <a href="https://www.linkedin.com/in/hamid-ali-a46426275/" target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-secondary)', textDecoration: 'none' }} className="footer-link">
                 <LinkedinIcon size={18} color="#0077b5" />
-                <span style={{ fontSize: '0.95rem' }}>Hamid Ali Khan</span>
+                <span style={{ fontSize: '0.95rem' }}>Hamid Ali</span>
                 <ExternalLink size={14} style={{ opacity: 0.4 }} />
               </a>
             </div>
