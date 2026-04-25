@@ -68,11 +68,24 @@ const ReviewModal: React.FC = () => {
     setStep('suggest');
   };
 
-  const handleSubmitSuggestion = () => {
-    // Store review data in localStorage (could be sent to Supabase in production)
+  const handleSubmitSuggestion = async () => {
+    const cleanSuggestion = suggestion.trim();
+    
+    // 1. Persist to Supabase
+    try {
+      await supabase.from('reviews').insert({
+        user_id: userProfile?.uid,
+        rating: rating,
+        suggestion: cleanSuggestion || null
+      });
+    } catch (err) {
+      console.error("Error saving review to database:", err);
+    }
+
+    // 2. Store in localStorage for UI state
     const reviewData = {
       rating,
-      suggestion: suggestion.trim(),
+      suggestion: cleanSuggestion,
       username: userProfile?.username || 'anonymous',
       timestamp: new Date().toISOString(),
     };
@@ -81,7 +94,19 @@ const ReviewModal: React.FC = () => {
     setStep('thanks');
   };
 
-  const handleSkipSuggestion = () => {
+  const handleSkipSuggestion = async () => {
+    // 1. Persist to Supabase
+    try {
+      await supabase.from('reviews').insert({
+        user_id: userProfile?.uid,
+        rating: rating,
+        suggestion: null
+      });
+    } catch (err) {
+      console.error("Error saving review to database:", err);
+    }
+
+    // 2. Store in localStorage
     const reviewData = {
       rating,
       suggestion: '',

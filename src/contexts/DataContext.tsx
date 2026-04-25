@@ -140,6 +140,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
           id, description, amount, paid_by, category, created_at, group_id, expense_date, participants_uids,
           payer:users!paid_by ( username )
         `)
+        .or(`paid_by.eq.${user.id},participants_uids.cs.{${user.id}}`)
         .order('expense_date', { ascending: false });
 
       if (expensesError) throw expensesError;

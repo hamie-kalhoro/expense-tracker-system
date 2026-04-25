@@ -58,33 +58,16 @@ const LandingPage: React.FC = () => {
   useEffect(() => {
     async function fetchStats() {
       try {
-        let newUsers = 0;
-        let newExpenses = 0;
-        let newRating = 0;
-
-        // Try to fetch true users count
-        const { count: uCount, error: uErr } = await supabase.from('users').select('*', { count: 'exact', head: true });
-        if (uCount && !uErr) newUsers = uCount;
-
-        // Try to fetch true expenses sum
-        const { data: expData, error: eErr } = await supabase.from('expenses').select('amount');
-        if (expData && !eErr) {
-          const sum = expData.reduce((acc: number, curr: any) => acc + (Number(curr.amount) || 0), 0);
-          newExpenses = sum;
+        const { data, error } = await supabase.rpc('get_platform_stats');
+        
+        if (data && data.length > 0 && !error) {
+          const stats = data[0];
+          setStats({
+            users: Number(stats.total_users),
+            rating: Number(stats.avg_rating),
+            expenses: Number(stats.total_expenses)
+          });
         }
-
-        // Try to fetch true reviews rating
-        const { data: revData, error: rErr } = await supabase.from('reviews').select('rating');
-        if (revData && !rErr && revData.length > 0) {
-          const sumRating = revData.reduce((acc: number, curr: any) => acc + (Number(curr.rating) || 0), 0);
-          newRating = sumRating / revData.length;
-        }
-
-        setStats({
-          users: newUsers,
-          rating: newRating,
-          expenses: newExpenses
-        });
       } catch (err) {
         console.error("Error fetching stats:", err);
       }

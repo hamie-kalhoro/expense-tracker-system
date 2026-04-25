@@ -55,6 +55,14 @@ CREATE TABLE IF NOT EXISTS public.notifications (
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
+CREATE TABLE IF NOT EXISTS public.reviews (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id uuid REFERENCES public.users(id) ON DELETE SET NULL,
+  rating integer NOT NULL CHECK (rating >= 1 AND rating <= 5),
+  suggestion text,
+  created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
 -- ==========================================
 -- 2. Drop ALL existing policies to ensure a clean slate
 -- ==========================================
@@ -77,6 +85,8 @@ ALTER TABLE public.friendships ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.expenses ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.expense_participants ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
+
+ALTER TABLE public.reviews ENABLE ROW LEVEL SECURITY;
 
 -- Users
 CREATE POLICY "Public profiles are viewable by everyone." ON public.users FOR SELECT USING (true);
@@ -117,6 +127,10 @@ CREATE POLICY "Users can view own notifications" ON public.notifications FOR SEL
 CREATE POLICY "Users can update own notifications" ON public.notifications FOR UPDATE USING (auth.uid() = user_id);
 CREATE POLICY "Users can create notifications for others" ON public.notifications FOR INSERT WITH CHECK (auth.role() = 'authenticated');
 CREATE POLICY "Users can delete own notifications" ON public.notifications FOR DELETE USING (auth.uid() = user_id);
+
+-- Reviews
+CREATE POLICY "Reviews are viewable by everyone" ON public.reviews FOR SELECT USING (true);
+CREATE POLICY "Authenticated users can create reviews" ON public.reviews FOR INSERT WITH CHECK (auth.role() = 'authenticated');
 
 -- ==========================================
 -- 4. Atomic Transaction Function (RPC)
@@ -171,6 +185,26 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created AFTER INSERT ON auth.users FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
+
+-- ==========================================
+-- 6. Public Statistics Function (RPC)
+-- ==========================================
+-- This allows the landing page to show total stats without exposing individual records via RLS
+
+CREATE OR REPLACE FUNCTION public.get_platform_stats()
+RETURNS TABLE (
+  total_users bigint,
+  total_expenses numeric,
+  avg_rating numeric
+) AS $$
+BEGIN
+  RETURN QUERY
+  SELECT 
+    (SELECT count(*) FROM public.users),
+    (SELECT COALESCE(sum(amount), 0) FROM public.expenses),
+    (SELECT COALESCE(avg(rating), 0) FROM public.reviews);
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Enable Realtime
 DO $$ 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Play, Info, CheckCircle, Zap } from 'lucide-react';
-import demoVideo from '../assets/demo_video/Screen Recording 2026-04-25 173855.mp4';
+// Using a direct path instead of a module import to prevent Vercel build failures for large files
+const demoVideoPath = "/src/assets/demo_video/Screen Recording 2026-04-25 173855.mp4";
 
 interface DemoVideoModalProps {
   isOpen: boolean;
@@ -9,10 +10,12 @@ interface DemoVideoModalProps {
 
 const DemoVideoModal: React.FC<DemoVideoModalProps> = ({ isOpen, onClose }) => {
   const [isExiting, setIsExiting] = useState(false);
+  const [videoError, setVideoError] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
+      setVideoError(false); // Reset error state when opening
     } else {
       document.body.style.overflow = 'unset';
     }
@@ -120,16 +123,27 @@ const DemoVideoModal: React.FC<DemoVideoModalProps> = ({ isOpen, onClose }) => {
           alignItems: 'center',
           justifyContent: 'center',
         }}>
-          <video
-            src={demoVideo}
-            controls
-            autoPlay
-            style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'contain',
-            }}
-          />
+          {videoError ? (
+            <div style={{ textAlign: 'center', padding: '40px' }}>
+              <AlertCircle size={48} color="var(--error)" style={{ marginBottom: '16px' }} />
+              <h4 style={{ color: 'white', marginBottom: '8px' }}>Demo Video Unavailable</h4>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', maxWidth: '400px' }}>
+                The demo video file is too large for GitHub hosting. For the full experience, please host the video externally or view it in the local development environment.
+              </p>
+            </div>
+          ) : (
+            <video
+              src={demoVideoPath}
+              controls
+              autoPlay
+              onError={() => setVideoError(true)}
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'contain',
+              }}
+            />
+          )}
         </div>
 
         {/* Info Footer */}
