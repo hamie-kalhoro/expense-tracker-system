@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
+import { supabase } from '../supabase/config';
 import { 
   Wallet, Activity, Users, Shield, Zap, ArrowRight, 
   CheckCircle, Sun, Moon, Phone, Mail, 
