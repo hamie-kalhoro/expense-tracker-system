@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Play, Info, CheckCircle, Zap } from 'lucide-react';
+import { X, Play, Info, CheckCircle, Zap, AlertCircle } from 'lucide-react';
 // Using a direct path instead of a module import to prevent Vercel build failures for large files
 const demoVideoPath = "/src/assets/demo_video/Screen Recording 2026-04-25 173855.mp4";
 

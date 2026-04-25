@@ -1,32 +1,30 @@
-# 🎓 SplitEase — Shared Expense Tracker for Students
+# 🎓 SplitEase — Shared Expense Tracker for Friends
 
-A beautiful, real-time web app for tracking and equalizing shared expenses among friends. Built with React + TypeScript and powered by Firebase.
+A beautiful, real-time web app for tracking and equalizing shared expenses among friends. Built with React + TypeScript and powered by **Supabase**.
 
 ![SplitEase](https://img.shields.io/badge/SplitEase-Expense_Tracker-blue?style=for-the-badge)
 
 ## ✨ Features
 
-- **🔐 Google Authentication** — Sign in securely via Firebase Auth
-- **💰 Expense Tracking** — Log expenses with descriptions, amounts, categories
+- **🔐 Secure Authentication** — Sign in via Supabase Auth (Email or OAuth)
+- **💰 Expense Tracking** — Log expenses with descriptions, amounts, and categories
 - **👥 Smart Splitting** — Auto-split expenses among friends with even division
-- **📊 Real-time Balances** — See who owes whom, updated instantly via Firestore
-- **🔄 Settlement Suggestions** — Greedy algorithm minimizes the number of payments needed
-- **✏️ Manual Corrections** — Edit or delete any expense you created
-- **📱 Responsive Design** — Looks great on desktop, tablet, and mobile
-- **🌙 Dark Mode UI** — Premium glassmorphism design with smooth animations
+- **🛡️ Data Isolation** — Strict Row Level Security (RLS) ensures your data is only visible to you and your participants
+- **📊 Public Metrics** — Secure platform-wide stats (total users, average rating) via public RPC
+- **💬 Feedback System** — Built-in review system to capture user suggestions
+- **🌙 Premium UI** — Stunning glassmorphism design with smooth animations and dark mode
 
 ## 🛠 Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
-| Frontend | React 19 + TypeScript |
-| Styling | Vanilla CSS (glassmorphism, responsive) |
-| Auth | Firebase Authentication (Google) |
-| Database | Cloud Firestore (real-time NoSQL) |
-| Icons | Lucide React |
-| Toasts | React Hot Toast |
-| Routing | React Router v7 |
-| Build | Vite 8 |
+| **Frontend** | React 19 + TypeScript |
+| **Styling** | Vanilla CSS (Modern Design System) |
+| **Backend** | Supabase (PostgreSQL, Auth, Realtime) |
+| **Security** | Row Level Security (RLS) + Custom RPCs |
+| **Icons** | Lucide React |
+| **State** | React Context API |
+| **Build** | Vite 8 |
 
 ## 🚀 Quick Start
 
@@ -38,29 +36,21 @@ cd expense-tracker
 npm install
 ```
 
-### 2. Configure Firebase
+### 2. Configure Supabase
 
-1. Go to [Firebase Console](https://console.firebase.google.com/) and create a new project
-2. Enable **Authentication → Google** sign-in provider
-3. Create a **Firestore** database (start in test mode or use the provided rules)
-4. Go to **Project Settings → General → Your apps → Web** and copy the config
-
-5. Create a `.env` file in the project root:
+1. Create a new project at [Supabase Console](https://supabase.com/).
+2. Go to **SQL Editor** and run the contents of `supabase_schema.sql`. This will:
+   - Create all tables (`users`, `expenses`, `friendships`, `reviews`, `notifications`)
+   - Enable Row Level Security (RLS)
+   - Create the `get_platform_stats` RPC for landing page metrics
+3. Create a `.env` file in the project root:
 
 ```env
-VITE_FIREBASE_API_KEY="your_api_key"
-VITE_FIREBASE_AUTH_DOMAIN="your_project.firebaseapp.com"
-VITE_FIREBASE_PROJECT_ID="your_project_id"
-VITE_FIREBASE_STORAGE_BUCKET="your_project.appspot.com"
-VITE_FIREBASE_MESSAGING_SENDER_ID="your_sender_id"
-VITE_FIREBASE_APP_ID="your_app_id"
+VITE_SUPABASE_URL="https://your-project-id.supabase.co"
+VITE_SUPABASE_ANON_KEY="your-anon-key"
 ```
 
-### 3. Deploy Firestore Rules
-
-Copy the contents of `firestore.rules` to your Firebase Console → Firestore → Rules.
-
-### 4. Run Locally
+### 3. Run Locally
 
 ```bash
 npm run dev
@@ -68,52 +58,30 @@ npm run dev
 
 Open [http://localhost:5173](http://localhost:5173)
 
-> **Mock Mode:** If `.env` is not configured, the app runs in mock/preview mode with a demo account and in-memory data.
-
 ## 📁 Project Structure
 
 ```
 src/
 ├── components/
-│   ├── Login.tsx          # Auth login page
-│   └── Dashboard.tsx      # Main dashboard with modals
+│   ├── Dashboard.tsx      # Main authenticated dashboard
+│   ├── LandingPage.tsx    # Secure public landing page
+│   └── ReviewModal.tsx    # Feedback & Rating system
 ├── contexts/
-│   ├── AuthContext.tsx     # Firebase Auth state
-│   └── DataContext.tsx     # Expense data + calculations
-├── firebase/
-│   ├── config.ts          # Firebase initialization
-│   └── expenses.ts        # Firestore CRUD helpers
-├── App.tsx                # Router + providers
-├── main.tsx               # Entry point
-└── index.css              # Design system
+│   ├── AuthContext.tsx     # Supabase Auth state
+│   ├── DataContext.tsx     # Expense calculations & logic
+│   └── FriendsContext.tsx  # Social graph management
+├── supabase/
+│   └── supabaseClient.ts  # Client initialization
+└── index.css              # Design system & tokens
 ```
-
-## 🔒 Security
-
-- Firestore Security Rules enforce per-user data access
-- Only expense creators can edit/delete their records
-- Participants can only read expenses they're involved in
-- See `firestore.rules` for the full ruleset
 
 ## 🚢 Deployment
 
-### Vercel (recommended)
+### Vercel (Recommended)
+This project is optimized for Vercel. Connect your GitHub repository for automatic deployments. 
 
-```bash
-npm install -g vercel
-vercel
-```
-
-### Netlify
-
-```bash
-npm run build
-# Upload dist/ to Netlify
-```
-
-### CI/CD
-
-Connect your GitHub repo to Vercel or Netlify for automatic deployments on every push.
+> [!IMPORTANT]
+> Large files like the demo video (>100MB) should be hosted externally (YouTube/Vimeo) or compressed to prevent build failures.
 
 ## 📄 License
 
