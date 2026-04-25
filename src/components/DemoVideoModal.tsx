@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Play, Info, CheckCircle, Zap, AlertCircle } from 'lucide-react';
 // Using the public folder path for production availability
-const demoVideoPath = "/demo_video/Screen Recording 2026-04-25 173855.mp4";
+const demoVideoPath = "/demo_video/demo-walkthrough.mp4";
 
 interface DemoVideoModalProps {
   isOpen: boolean;
