@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { 
   Wallet, Activity, Users, Shield, Zap, ArrowRight, 
   CheckCircle, Sun, Moon, Phone, Mail, 
-  User, ExternalLink, Code, Share2
+  User, ExternalLink, Code, Share2, Star
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import WelcomeModal from './WelcomeModal';
@@ -156,6 +156,42 @@ const LandingPage: React.FC = () => {
               </div>
             ))}
           </div>
+
+          {/* Social Proof / Stats Concept */}
+          <div className="glass animate-entrance stats-container" style={{ 
+            animationDelay: '0.4s', borderRadius: 'var(--radius-xl)', 
+            marginBottom: '140px',
+            border: '1px solid var(--border)', background: 'var(--bg-elevated)'
+          }}>
+            <div className="stat-item" style={{ textAlign: 'center' }}>
+              <div className="stat-number gradient-text" style={{ fontWeight: 900, lineHeight: 1 }}>
+                24K+
+              </div>
+              <p className="stat-label">Active Users</p>
+            </div>
+            
+            <div className="stats-divider" style={{ background: 'var(--border)' }} />
+            
+            <div className="stat-item" style={{ textAlign: 'center' }}>
+              <div className="stat-number" style={{ fontWeight: 900, color: 'var(--warning)', lineHeight: 1 }}>
+                4.9
+              </div>
+              <p className="stat-label">Average Rating</p>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '4px', marginTop: '8px' }}>
+                {[1,2,3,4,5].map(i => <Star key={i} size={16} fill="var(--warning)" color="var(--warning)" />)}
+              </div>
+            </div>
+            
+            <div className="stats-divider" style={{ background: 'var(--border)' }} />
+            
+            <div className="stat-item" style={{ textAlign: 'center' }}>
+              <div className="stat-number" style={{ fontWeight: 900, color: 'var(--success)', lineHeight: 1 }}>
+                $2M+
+              </div>
+              <p className="stat-label">Expenses Split</p>
+            </div>
+          </div>
+
         </div>
       </main>
 
@@ -274,10 +310,32 @@ const LandingPage: React.FC = () => {
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
         }
+        .stats-container {
+          padding: 40px 24px;
+          display: flex;
+          flex-wrap: wrap;
+          gap: 40px;
+          justify-content: space-around;
+          align-items: center;
+        }
+        .stat-number { font-size: 3.5rem; }
+        .stat-label { margin: 8px 0 0; font-weight: 700; color: var(--text-secondary); }
+        .stats-divider { width: 1px; height: 60px; }
+
         @media (max-width: 768px) {
           .nav-tabs-desktop {
             display: none !important;
           }
+          .stats-container {
+            flex-direction: column;
+            padding: 32px 20px;
+            gap: 24px;
+          }
+          .stats-divider {
+            width: 80px;
+            height: 1px;
+          }
+          .stat-number { font-size: 2.8rem; }
         }
       `}</style>
     </div>
