@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
-import { Wallet, LogIn, UserPlus, Eye, EyeOff, Mail, Lock, AtSign, Sun, Moon, CheckCircle, Activity, Users } from 'lucide-react';
+import { Wallet, LogIn, UserPlus, Eye, EyeOff, Mail, Lock, AtSign, Sun, Moon, CheckCircle, Activity, Users, ArrowLeft } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const Auth: React.FC = () => {
   const { signInWithEmail, signUpWithEmail, signInWithGoogle, isMockMode, checkUsernameAvailability } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -153,6 +155,22 @@ const Auth: React.FC = () => {
         background: 'radial-gradient(circle, rgba(236, 72, 153, 0.1) 0%, transparent 70%)',
         opacity: 0.6, zIndex: 0
       }} />
+
+      {/* Back to Home */}
+      <button
+        onClick={() => navigate('/')}
+        className="glass"
+        style={{
+          position: 'absolute', top: '24px', left: '24px',
+          borderRadius: 'var(--radius-md)', padding: '10px 16px',
+          cursor: 'pointer', color: 'var(--text-primary)',
+          zIndex: 50, display: 'flex', alignItems: 'center', gap: '8px',
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          fontWeight: 600, fontSize: '0.85rem', border: '1px solid var(--border)'
+        }}
+      >
+        <ArrowLeft size={16} /> Back
+      </button>
 
       {/* Theme toggle */}
       <button
