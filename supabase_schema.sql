@@ -175,7 +175,10 @@ BEGIN
   INSERT INTO public.users (id, email, username, display_name, photo_url)
   VALUES (
     new.id, new.email,
-    COALESCE(new.raw_user_meta_data->>'username', split_part(new.email, '@', 1) || '_' || substr(md5(random()::text), 1, 6)),
+    COALESCE(
+      new.raw_user_meta_data->>'username', 
+      replace(split_part(new.email, '@', 1), '.', '') || '_' || substr(md5(random()::text), 1, 6)
+    ),
     COALESCE(new.raw_user_meta_data->>'display_name', new.raw_user_meta_data->>'full_name', split_part(new.email, '@', 1)),
     new.raw_user_meta_data->>'avatar_url'
   ) ON CONFLICT (id) DO NOTHING;
