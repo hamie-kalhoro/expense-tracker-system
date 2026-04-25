@@ -59,7 +59,7 @@ const LandingPage: React.FC = () => {
         let newRating = 0;
 
         // Try to fetch true users count
-        const { count: uCount, error: uErr } = await supabase.from('profiles').select('*', { count: 'exact', head: true });
+        const { count: uCount, error: uErr } = await supabase.from('users').select('*', { count: 'exact', head: true });
         if (uCount && !uErr) newUsers = uCount;
 
         // Try to fetch true expenses sum
