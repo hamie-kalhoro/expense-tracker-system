@@ -46,29 +46,39 @@ const LandingPage: React.FC = () => {
   const { theme, toggleTheme } = useTheme();
 
   const [stats, setStats] = useState({
-    users: 24000,
-    rating: 4.9,
-    expenses: 2000000
+    users: 0,
+    rating: 0,
+    expenses: 0
   });
 
   useEffect(() => {
     async function fetchStats() {
       try {
-        let newUsers = 24000;
-        let newExpenses = 2000000;
+        let newUsers = 0;
+        let newExpenses = 0;
+        let newRating = 0;
 
-        const { count: uCount } = await supabase.from('profiles').select('*', { count: 'exact', head: true });
-        if (uCount) newUsers += uCount;
+        // Try to fetch true users count
+        const { count: uCount, error: uErr } = await supabase.from('profiles').select('*', { count: 'exact', head: true });
+        if (uCount && !uErr) newUsers = uCount;
 
-        const { data: expData } = await supabase.from('expenses').select('amount');
-        if (expData) {
+        // Try to fetch true expenses sum
+        const { data: expData, error: eErr } = await supabase.from('expenses').select('amount');
+        if (expData && !eErr) {
           const sum = expData.reduce((acc: number, curr: any) => acc + (Number(curr.amount) || 0), 0);
-          newExpenses += sum;
+          newExpenses = sum;
+        }
+
+        // Try to fetch true reviews rating
+        const { data: revData, error: rErr } = await supabase.from('reviews').select('rating');
+        if (revData && !rErr && revData.length > 0) {
+          const sumRating = revData.reduce((acc: number, curr: any) => acc + (Number(curr.rating) || 0), 0);
+          newRating = sumRating / revData.length;
         }
 
         setStats({
           users: newUsers,
-          rating: 4.9,
+          rating: newRating,
           expenses: newExpenses
         });
       } catch (err) {
@@ -214,11 +224,11 @@ const LandingPage: React.FC = () => {
             
             <div className="stat-item" style={{ textAlign: 'center' }}>
               <div className="stat-number" style={{ fontWeight: 900, color: 'var(--warning)', lineHeight: 1 }}>
-                {stats.rating}
+                {stats.rating > 0 ? stats.rating.toFixed(1) : '0.0'}
               </div>
               <p className="stat-label">Average Rating</p>
               <div style={{ display: 'flex', justifyContent: 'center', gap: '4px', marginTop: '8px' }}>
-                {[1,2,3,4,5].map(i => <Star key={i} size={16} fill="var(--warning)" color="var(--warning)" />)}
+                {[1,2,3,4,5].map(i => <Star key={i} size={16} fill={i <= Math.round(stats.rating) ? "var(--warning)" : "transparent"} color="var(--warning)" />)}
               </div>
             </div>
             
