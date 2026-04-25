@@ -22,6 +22,15 @@ const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const [showAddExpense, setShowAddExpense] = useState(false);
   const [showFriends, setShowFriends] = useState(false);
+  const [activeTab, setActiveTab] = useState('Overview');
+
+  // Calculate dynamic efficiency based on user's involvement in expenses
+  const calculateEfficiency = () => {
+    if (expenses.length === 0) return 50;
+    const score = 50 + (expenses.length * 3) + (settlements.length * 2);
+    return Math.min(score, 99);
+  };
+  const efficiencyScore = calculateEfficiency();
 
   const username = userProfile?.username || user?.user_metadata?.full_name || 'user';
 
@@ -64,10 +73,11 @@ const Dashboard: React.FC = () => {
               {['Overview', 'Expenses', 'Friends', 'Activity'].map((tab) => (
                 <button 
                   key={tab}
+                  onClick={() => setActiveTab(tab)}
                   className="btn btn-ghost" 
                   style={{ 
-                    border: 'none', background: tab === 'Overview' ? 'var(--accent-subtle)' : 'transparent',
-                    color: tab === 'Overview' ? 'var(--accent-1)' : 'var(--text-secondary)',
+                    border: 'none', background: tab === activeTab ? 'var(--accent-subtle)' : 'transparent',
+                    color: tab === activeTab ? 'var(--accent-1)' : 'var(--text-secondary)',
                     padding: '8px 16px', fontSize: '0.85rem'
                   }}
                 >
@@ -186,14 +196,15 @@ const Dashboard: React.FC = () => {
           }}>
             <Activity style={{ position: 'absolute', right: '-10px', bottom: '-10px', opacity: 0.1, transform: 'rotate(-15deg)', width: '120px', height: '120px' }} />
             <h4 style={{ margin: 0, fontWeight: 700, fontSize: '0.9rem', opacity: 0.9 }}>Efficiency</h4>
-            <div style={{ fontSize: '2rem', fontWeight: 800, margin: '4px 0' }}>94%</div>
-            <p style={{ margin: 0, fontSize: '0.7rem', opacity: 0.8 }}>Faster than 90% of peers</p>
+            <div style={{ fontSize: '2rem', fontWeight: 800, margin: '4px 0' }}>{efficiencyScore}%</div>
+            <p style={{ margin: 0, fontSize: '0.7rem', opacity: 0.8 }}>Faster than {efficiencyScore - 4}% of peers</p>
           </div>
         </div>
 
         {/* Content Layout */}
         <div className="dashboard-grid">
           {/* Left Column: List of Expenses */}
+          {(activeTab === 'Overview' || activeTab === 'Expenses') && (
           <div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
               <h3 style={{ fontSize: '1.25rem', fontWeight: 800 }}>Recent Transactions</h3>
@@ -245,10 +256,13 @@ const Dashboard: React.FC = () => {
               )}
             </div>
           </div>
+          )}
 
           {/* Right Column: Friend Activity & Settlements */}
+          {(activeTab === 'Overview' || activeTab === 'Friends' || activeTab === 'Activity') && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
             {/* Settlements */}
+            {(activeTab === 'Overview' || activeTab === 'Activity') && (
             <div>
               <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '24px' }}>Smart Settle</h3>
               <div className="glass" style={{ padding: '24px', borderRadius: 'var(--radius-lg)' }}>
@@ -279,8 +293,10 @@ const Dashboard: React.FC = () => {
                 )}
               </div>
             </div>
+            )}
 
             {/* Friend List Card */}
+            {(activeTab === 'Overview' || activeTab === 'Friends') && (
             <div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
                 <h3 style={{ fontSize: '1.25rem', fontWeight: 800 }}>Inner Circle</h3>
@@ -313,7 +329,9 @@ const Dashboard: React.FC = () => {
                 )}
               </div>
             </div>
+            )}
           </div>
+          )}
         </div>
       </main>
 

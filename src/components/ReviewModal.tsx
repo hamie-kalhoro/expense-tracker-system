@@ -21,10 +21,32 @@ const ReviewModal: React.FC = () => {
   const [step, setStep] = useState<'rate' | 'suggest' | 'thanks'>('rate');
 
   useEffect(() => {
-    const alreadySubmitted = localStorage.getItem(REVIEW_KEY);
+    const alreadySubmittedStr = localStorage.getItem(REVIEW_KEY);
     const dismissed = localStorage.getItem(REVIEW_DISMISSED_KEY);
 
-    if (alreadySubmitted || dismissed) return;
+    if (dismissed) return;
+
+    if (alreadySubmittedStr) {
+      try {
+        const reviewData = JSON.parse(alreadySubmittedStr);
+        if (reviewData.timestamp) {
+          const reviewDate = new Date(reviewData.timestamp);
+          const now = new Date();
+          const diffTime = now.getTime() - reviewDate.getTime();
+          const diffDays = diffTime / (1000 * 60 * 60 * 24); 
+          
+          if (diffDays < 30) {
+            return;
+          } else {
+            localStorage.removeItem(REVIEW_KEY);
+          }
+        } else {
+          return;
+        }
+      } catch (e) {
+        return;
+      }
+    }
 
     // Count expenses created by the current user
     if (expenses.length >= 5 && userProfile) {

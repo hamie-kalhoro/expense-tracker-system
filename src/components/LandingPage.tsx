@@ -8,6 +8,20 @@ import {
 import { useTheme } from '../contexts/ThemeContext';
 import WelcomeModal from './WelcomeModal';
 
+const LinkedinIcon = ({ size = 20, color = 'currentColor' }: { size?: number; color?: string }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
+    <rect x="2" y="9" width="4" height="12" />
+    <circle cx="4" cy="4" r="2" />
+  </svg>
+);
+
+const GithubIcon = ({ size = 20, color = 'currentColor' }: { size?: number; color?: string }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" />
+  </svg>
+);
+
 // Premium Instagram Icon with Gradient
 const InstagramIcon = ({ size = 20 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -54,9 +68,9 @@ const LandingPage: React.FC = () => {
         </div>
 
         <div className="nav-tabs-desktop" style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-          <span className="nav-link">Features</span>
-          <span className="nav-link">About</span>
-          <span className="nav-link">Pricing</span>
+          <span className="nav-link" onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}>Features</span>
+          <span className="nav-link" onClick={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })}>About</span>
+          <span className="nav-link" onClick={() => alert("SplitEase is 100% free forever! No pricing tiers, no hidden fees.")}>Pricing</span>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -122,7 +136,7 @@ const LandingPage: React.FC = () => {
           </div>
 
           {/* Features Grid */}
-          <div className="animate-entrance" style={{ animationDelay: '0.2s', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px', marginBottom: '140px' }}>
+          <div id="features" className="animate-entrance" style={{ animationDelay: '0.2s', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px', marginBottom: '140px' }}>
             {[
               { icon: Zap, title: "Instant Sync", desc: "Real-time updates across all devices powered by our lightning-fast architecture." },
               { icon: Users, title: "Social Hub", desc: "Built-in friend discovery, profile bios, and interactive activity feeds." },
@@ -146,7 +160,7 @@ const LandingPage: React.FC = () => {
       </main>
 
       {/* Premium Footer with Personal Details */}
-      <footer className="glass" style={{ 
+      <footer id="about" className="glass" style={{ 
         marginTop: 'auto', borderTop: '1px solid var(--border)', 
         padding: '80px 24px 40px 24px', borderRadius: '60px 60px 0 0'
       }}>
@@ -172,9 +186,9 @@ const LandingPage: React.FC = () => {
                 <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--accent-gradient)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 800, fontSize: '0.7rem' }}>HK</div>
                 <span style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)' }}>Hamid Ali Khan (Kalhoro)</span>
               </div>
-              <a href="https://instagram.com/hamidi_2005" target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-secondary)', textDecoration: 'none' }} className="footer-link">
+              <a href="https://www.instagram.com/hamidi_2oo5/" target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-secondary)', textDecoration: 'none' }} className="footer-link">
                 <InstagramIcon size={20} />
-                <span style={{ fontSize: '0.95rem' }}>@hamidi_2005</span>
+                <span style={{ fontSize: '0.95rem' }}>@hamidi_2oo5</span>
                 <ExternalLink size={14} style={{ opacity: 0.4 }} />
               </a>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-secondary)' }}>
@@ -185,6 +199,16 @@ const LandingPage: React.FC = () => {
                 <Mail size={18} color="var(--accent-1)" />
                 <span style={{ fontSize: '0.95rem' }}>hamidkalhoro.in@gmail.com</span>
               </a>
+              <a href="https://github.com/hamie-kalhoro" target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-secondary)', textDecoration: 'none' }} className="footer-link">
+                <GithubIcon size={18} color="var(--text-secondary)" />
+                <span style={{ fontSize: '0.95rem' }}>github.com/hamie-kalhoro</span>
+                <ExternalLink size={14} style={{ opacity: 0.4 }} />
+              </a>
+              <a href="https://www.linkedin.com/in/hamid-ali-a46426275/" target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-secondary)', textDecoration: 'none' }} className="footer-link">
+                <LinkedinIcon size={18} color="#0077b5" />
+                <span style={{ fontSize: '0.95rem' }}>Hamid Ali Khan</span>
+                <ExternalLink size={14} style={{ opacity: 0.4 }} />
+              </a>
             </div>
           </div>
 
@@ -192,14 +216,15 @@ const LandingPage: React.FC = () => {
           <div>
             <h4 style={{ fontSize: '0.8rem', fontWeight: 800, marginBottom: '24px', color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Connect</h4>
             <div style={{ display: 'flex', gap: '16px' }}>
-              {[Code, Share2].map((Icon, i) => (
-                <button key={i} className="icon-btn card-hover" style={{ width: '48px', height: '48px', borderRadius: '14px' }}>
-                  <Icon size={20} />
-                </button>
-              ))}
-              <button className="icon-btn card-hover" style={{ width: '48px', height: '48px', borderRadius: '14px' }}>
+              <a href="https://github.com/hamie-kalhoro" target="_blank" rel="noopener noreferrer" className="icon-btn card-hover" style={{ width: '48px', height: '48px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'inherit', textDecoration: 'none' }}>
+                <GithubIcon size={20} />
+              </a>
+              <a href="https://www.linkedin.com/in/hamid-ali-a46426275/" target="_blank" rel="noopener noreferrer" className="icon-btn card-hover" style={{ width: '48px', height: '48px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'inherit', textDecoration: 'none' }}>
+                <LinkedinIcon size={20} />
+              </a>
+              <a href="https://www.instagram.com/hamidi_2oo5/" target="_blank" rel="noopener noreferrer" className="icon-btn card-hover" style={{ width: '48px', height: '48px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'inherit', textDecoration: 'none' }}>
                 <InstagramIcon size={20} />
-              </button>
+              </a>
             </div>
           </div>
         </div>
