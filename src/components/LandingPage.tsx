@@ -8,6 +8,8 @@ import {
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import WelcomeModal from './WelcomeModal';
+import DemoVideoModal from './DemoVideoModal';
+
 
 const LinkedinIcon = ({ size = 20, color = 'currentColor' }: { size?: number; color?: string }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -50,6 +52,8 @@ const LandingPage: React.FC = () => {
     rating: 0,
     expenses: 0
   });
+  const [isDemoOpen, setIsDemoOpen] = useState(false);
+
 
   useEffect(() => {
     async function fetchStats() {
@@ -98,6 +102,10 @@ const LandingPage: React.FC = () => {
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--page-gradient)' }}>
       {/* Welcome Modal for New Users */}
       <WelcomeModal />
+
+      {/* Demo Video Walkthrough */}
+      <DemoVideoModal isOpen={isDemoOpen} onClose={() => setIsDemoOpen(false)} />
+
 
       {/* Premium Navigation Bar */}
       <nav className="glass" style={{ 
@@ -179,9 +187,10 @@ const LandingPage: React.FC = () => {
               <button onClick={() => navigate('/login')} className="btn btn-primary card-hover" style={{ padding: '18px 42px', fontSize: '1.1rem', borderRadius: 'var(--radius-lg)', boxShadow: '0 15px 35px var(--accent-glow)' }}>
                 Start Free Account <ArrowRight size={20} />
               </button>
-              <button onClick={() => navigate('/login')} className="btn glass card-hover" style={{ padding: '18px 42px', fontSize: '1.1rem', borderRadius: 'var(--radius-lg)', color: 'var(--text-primary)' }}>
+              <button onClick={() => setIsDemoOpen(true)} className="btn glass card-hover" style={{ padding: '18px 42px', fontSize: '1.1rem', borderRadius: 'var(--radius-lg)', color: 'var(--text-primary)' }}>
                 Watch Demo
               </button>
+
             </div>
           </div>
 

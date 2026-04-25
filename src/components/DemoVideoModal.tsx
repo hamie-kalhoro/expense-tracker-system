@@ -1,0 +1,175 @@
+import React, { useState, useEffect } from 'react';
+import { X, Play, Info, CheckCircle, Zap } from 'lucide-react';
+import demoVideo from '../assets/demo_video/Screen Recording 2026-04-25 173855.mp4';
+
+interface DemoVideoModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+const DemoVideoModal: React.FC<DemoVideoModalProps> = ({ isOpen, onClose }) => {
+  const [isExiting, setIsExiting] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
+  const handleClose = () => {
+    setIsExiting(true);
+    setTimeout(() => {
+      setIsExiting(false);
+      onClose();
+    }, 400);
+  };
+
+  if (!isOpen && !isExiting) return null;
+
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        background: 'var(--bg-overlay)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 9999,
+        padding: '20px',
+        backdropFilter: 'blur(12px)',
+        animation: isExiting ? 'demoFadeOut 0.4s ease-out forwards' : 'fadeIn 0.5s ease-out',
+      }}
+      onClick={handleClose}
+    >
+      <div
+        className="glass"
+        style={{
+          maxWidth: '1000px',
+          width: '100%',
+          borderRadius: 'var(--radius-xl)',
+          overflow: 'hidden',
+          boxShadow: '0 40px 100px rgba(0,0,0,0.3), 0 0 0 1px var(--border)',
+          animation: isExiting ? 'demoSlideOut 0.4s ease-out forwards' : 'demoSlideIn 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
+          position: 'relative',
+          background: 'var(--bg-modal)',
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div style={{
+          padding: '20px 24px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          borderBottom: '1px solid var(--border)',
+          background: 'var(--bg-elevated)',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '10px',
+              background: 'var(--accent-gradient)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'white',
+            }}>
+              <Play size={18} fill="currentColor" />
+            </div>
+            <div>
+              <h3 style={{ fontSize: '1rem', fontWeight: 800, margin: 0 }}>Product Walkthrough</h3>
+              <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', margin: 0, fontWeight: 600 }}>See SplitEase in Action</p>
+            </div>
+          </div>
+          <button
+            onClick={handleClose}
+            style={{
+              background: 'var(--bg-elevated)',
+              border: '1px solid var(--border)',
+              borderRadius: '10px',
+              width: '36px',
+              height: '36px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              color: 'var(--text-secondary)',
+              transition: 'all 0.2s',
+            }}
+            onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--accent-1)', e.currentTarget.style.color = 'var(--accent-1)')}
+            onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border)', e.currentTarget.style.color = 'var(--text-secondary)')}
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* Video Player */}
+        <div style={{ 
+          position: 'relative', 
+          width: '100%', 
+          aspectRatio: '16/9',
+          background: '#000',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
+          <video
+            src={demoVideo}
+            controls
+            autoPlay
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'contain',
+            }}
+          />
+        </div>
+
+        {/* Info Footer */}
+        <div style={{
+          padding: '24px',
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gap: '20px',
+          background: 'var(--bg-elevated)',
+          borderTop: '1px solid var(--border)',
+        }}>
+          {[
+            { icon: Zap, text: 'Real-time syncing shown', color: 'var(--warning)' },
+            { icon: CheckCircle, text: 'Expense splitting process', color: 'var(--success)' },
+            { icon: Info, text: 'Social profile management', color: 'var(--accent-1)' },
+          ].map((item, idx) => (
+            <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <item.icon size={16} color={item.color} />
+              <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>{item.text}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <style>{`
+        @keyframes demoSlideIn {
+          from { opacity: 0; transform: translateY(30px) scale(0.95); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes demoSlideOut {
+          from { opacity: 1; transform: translateY(0) scale(1); }
+          to { opacity: 0; transform: translateY(20px) scale(0.98); }
+        }
+        @keyframes demoFadeOut {
+          from { opacity: 1; }
+          to { opacity: 0; }
+        }
+      `}</style>
+    </div>
+  );
+};
+
+export default DemoVideoModal;
