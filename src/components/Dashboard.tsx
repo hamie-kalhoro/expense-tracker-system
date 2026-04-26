@@ -302,25 +302,33 @@ const Dashboard: React.FC = () => {
                 <h3 style={{ fontSize: '1.25rem', fontWeight: 800 }}>Inner Circle</h3>
                 <button onClick={() => setShowFriends(true)} className="icon-btn" style={{ borderRadius: 'var(--radius-full)', width: '32px', height: '32px' }}><Plus size={14} /></button>
               </div>
-              <div className="glass" style={{ padding: '8px', borderRadius: 'var(--radius-lg)' }}>
+              <div className="glass" style={{ 
+                padding: '8px', 
+                borderRadius: 'var(--radius-lg)',
+                maxHeight: '400px',
+                overflowY: 'auto',
+                scrollbarWidth: 'none'
+              }}>
                 {friends.length === 0 ? (
                   <p style={{ textAlign: 'center', padding: '20px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>Invite your friends!</p>
                 ) : (
                   friends.map((friend) => (
-                    <div key={friend.uid} style={{ 
+                    <div key={friend.uid || Math.random().toString()} style={{ 
                       padding: '12px', display: 'flex', alignItems: 'center', gap: '12px',
                       borderBottom: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-md)'
                     }} className="card-hover">
                       <div className="avatar avatar-md" style={{ width: '40px', height: '40px', fontSize: '0.9rem', overflow: 'hidden' }}>
                         {friend.photoURL ? (
-                          <img src={friend.photoURL} alt={friend.username} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          <img src={friend.photoURL} alt={friend.username || 'Friend'} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         ) : (
-                          friend.username[0].toUpperCase()
+                          (friend.username?.[0] || 'F').toUpperCase()
                         )}
                       </div>
-                      <div style={{ flex: 1 }}>
-                        <p style={{ margin: 0, fontWeight: 700, fontSize: '0.85rem' }}>{friend.displayName}</p>
-                        <p style={{ margin: 0, fontSize: '0.7rem', color: 'var(--text-secondary)', fontStyle: 'italic', opacity: 0.8, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '180px' }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ margin: 0, fontWeight: 700, fontSize: '0.85rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {friend.displayName || friend.username || 'Anonymous Friend'}
+                        </p>
+                        <p style={{ margin: 0, fontSize: '0.7rem', color: 'var(--text-secondary)', fontStyle: 'italic', opacity: 0.8, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                           {friend.bio || "No bio added yet."}
                         </p>
                       </div>

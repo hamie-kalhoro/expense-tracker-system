@@ -92,36 +92,55 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const me = balArr.find(b => b.userId === currentUid);
     setMyBalance(me ? me.balance : 0);
 
-    // Greedy Settlements Algorithm
-    const debtors: { uid: string; name: string; amount: number }[] = [];
-    const creditors: { uid: string; name: string; amount: number }[] = [];
-
-    Object.entries(netMap).forEach(([uid, bal]) => {
-      const name = nameMap[uid] || uid;
-      if (bal < -0.01) debtors.push({ uid, name, amount: -bal });
-      if (bal > 0.01) creditors.push({ uid, name, amount: bal });
+    // Direct Pairwise Settlements (Secure & Context-Aware)
+    // This ensures users only settle with people they actually shared expenses with.
+    const directDebts: Record<string, Record<string, number>> = {};
+    
+    exps.forEach(exp => {
+      const perPerson = exp.amount / exp.splitWith.length;
+      const payerId = exp.paidBy;
+      
+      exp.splitWith.forEach((uid) => {
+        if (uid === payerId) return;
+        
+        if (!directDebts[uid]) directDebts[uid] = {};
+        directDebts[uid][payerId] = (directDebts[uid][payerId] || 0) + perPerson;
+      });
     });
 
-    debtors.sort((a, b) => b.amount - a.amount);
-    creditors.sort((a, b) => b.amount - a.amount);
-
     const settArr: Settlement[] = [];
-    let i = 0, j = 0;
-    while (i < debtors.length && j < creditors.length) {
-      const transfer = Math.min(debtors[i].amount, creditors[j].amount);
-      if (transfer > 0.01) {
-        settArr.push({
-          from: debtors[i].uid,
-          fromName: debtors[i].uid === currentUid ? 'You' : debtors[i].name,
-          to: creditors[j].uid,
-          toName: creditors[j].uid === currentUid ? 'You' : creditors[j].name,
-          amount: Math.round(transfer * 100) / 100,
-        });
+    const processedPairs = new Set<string>();
+    const allRelevantUids = Object.keys(nameMap);
+
+    for (const u1 of allRelevantUids) {
+      for (const u2 of allRelevantUids) {
+        if (u1 === u2) continue;
+        const pairId = [u1, u2].sort().join(':');
+        if (processedPairs.has(pairId)) continue;
+        processedPairs.add(pairId);
+
+        const u1OwesU2 = directDebts[u1]?.[u2] || 0;
+        const u2OwesU1 = directDebts[u2]?.[u1] || 0;
+        const net = u1OwesU2 - u2OwesU1;
+
+        if (Math.abs(net) > 0.01) {
+          const from = net > 0 ? u1 : u2;
+          const to = net > 0 ? u2 : u1;
+          const amount = Math.abs(net);
+
+          // We only show the settlement if it involves the current user
+          // This adds a layer of privacy and focus.
+          if (from === currentUid || to === currentUid) {
+            settArr.push({
+              from,
+              fromName: from === currentUid ? 'You' : (nameMap[from] || 'User'),
+              to,
+              toName: to === currentUid ? 'You' : (nameMap[to] || 'User'),
+              amount: Math.round(amount * 100) / 100,
+            });
+          }
+        }
       }
-      debtors[i].amount -= transfer;
-      creditors[j].amount -= transfer;
-      if (debtors[i].amount < 0.01) i++;
-      if (creditors[j].amount < 0.01) j++;
     }
     setSettlements(settArr);
   }, [user]);

@@ -176,18 +176,18 @@ const FriendsModal: React.FC<FriendsModalProps> = ({ open, onClose }) => {
                   </div>
                 ) : (
                   friends.map((friend) => (
-                    <div key={friend.uid} className="glass card-hover" style={{ padding: '16px', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                        <div className="avatar avatar-md">{friend.username[0]}</div>
-                        <div>
-                          <p style={{ margin: 0, fontWeight: 700, fontSize: '0.9rem' }}>{friend.displayName}</p>
-                          <p style={{ margin: 0, fontSize: '0.7rem', color: 'var(--accent-1)', fontWeight: 600 }}>@{friend.username}</p>
-                          <p style={{ margin: '4px 0 0', fontSize: '0.75rem', color: 'var(--text-secondary)', fontStyle: 'italic', opacity: 0.8 }}>
+                    <div key={friend.uid || Math.random().toString()} className="glass card-hover" style={{ padding: '16px', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', minWidth: 0 }}>
+                        <div className="avatar avatar-md">{(friend.username?.[0] || 'F').toUpperCase()}</div>
+                        <div style={{ minWidth: 0 }}>
+                          <p style={{ margin: 0, fontWeight: 700, fontSize: '0.9rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{friend.displayName || friend.username || 'Anonymous Friend'}</p>
+                          <p style={{ margin: 0, fontSize: '0.7rem', color: 'var(--accent-1)', fontWeight: 600 }}>@{friend.username || 'unknown'}</p>
+                          <p style={{ margin: '4px 0 0', fontSize: '0.75rem', color: 'var(--text-secondary)', fontStyle: 'italic', opacity: 0.8, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                             {friend.bio ? `"${friend.bio}"` : "No bio added yet."}
                           </p>
                         </div>
                       </div>
-                      <button onClick={() => removeFriend(friend.uid)} className="icon-btn" style={{ background: 'var(--error-bg)', color: 'var(--error)' }}><UserMinus size={16} /></button>
+                      <button onClick={() => removeFriend(friend.uid)} className="icon-btn" style={{ background: 'var(--error-bg)', color: 'var(--error)', flexShrink: 0 }}><UserMinus size={16} /></button>
                     </div>
                   ))
                 )}
