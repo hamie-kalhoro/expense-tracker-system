@@ -33,8 +33,8 @@ export const FriendsProvider: React.FC<{ children: React.ReactNode }> = ({ child
           status,
           user_id1,
           user_id2,
-          user1:users!user_id1 ( id, username, display_name, photo_url, email, created_at, bio ),
-          user2:users!user_id2 ( id, username, display_name, photo_url, email, created_at, bio )
+          user1:users!user_id1 ( id, username, display_name, photo_url, email, created_at, bio, role ),
+          user2:users!user_id2 ( id, username, display_name, photo_url, email, created_at, bio, role )
         `)
         .or(`user_id1.eq.${user.id},user_id2.eq.${user.id}`);
 
@@ -57,6 +57,7 @@ export const FriendsProvider: React.FC<{ children: React.ReactNode }> = ({ child
           email: otherUser.email,
           photoURL: otherUser.photo_url || undefined,
           bio: otherUser.bio || undefined,
+          role: otherUser.role || 'user',
           createdAt: otherUser.created_at
         };
 
