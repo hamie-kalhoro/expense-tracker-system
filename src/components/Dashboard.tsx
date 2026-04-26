@@ -7,15 +7,16 @@ import AddExpenseModal from './AddExpenseModal';
 import FriendsModal from './FriendsModal';
 import NotificationsCenter from './NotificationsCenter';
 import ReviewModal from './ReviewModal';
+import SplitEaseLogo from './SplitEaseLogo';
 import {
   LogOut, Plus, Activity, Users, Wallet, DollarSign, Trash2,
   ArrowRight, CheckCircle, TrendingDown, CreditCard, Sun, Moon,
-  ArrowLeft, ChevronRight,
+  ArrowLeft, ChevronRight, Shield,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const Dashboard: React.FC = () => {
-  const { user, userProfile, signOut } = useAuth();
+  const { user, userProfile, signOut, isAdmin } = useAuth();
   const { expenses, settlements, deleteExpense, totalSpent, myBalance } = useData();
   const { friends, pendingRequests } = useFriends();
   const { theme, toggleTheme } = useTheme();
@@ -57,16 +58,7 @@ const Dashboard: React.FC = () => {
         <div className="nav-content">
           <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div className="blob" style={{
-                width: '40px', height: '40px', background: 'var(--accent-gradient)',
-                borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                boxShadow: '0 8px 16px var(--accent-glow)'
-              }}>
-                <Wallet size={20} color="white" />
-              </div>
-              <h1 style={{ fontSize: '1.25rem', fontWeight: 800, letterSpacing: '-0.02em' }}>
-                Split<span className="gradient-text">Ease</span>
-              </h1>
+              <SplitEaseLogo size={40} onClick={() => navigate('/profile')} />
             </div>
 
             <div className="nav-tabs" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -115,6 +107,13 @@ const Dashboard: React.FC = () => {
               </button>
             </div>
             
+            
+            {isAdmin && (
+              <button onClick={() => navigate('/admin')} className="admin-nav-btn" title="Admin Panel">
+                <Shield size={14} /> <span className="admin-text">Admin</span>
+              </button>
+            )}
+
             <button onClick={toggleTheme} className="icon-btn theme-spin" style={{ width: '40px', height: '40px' }}>
               {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
             </button>

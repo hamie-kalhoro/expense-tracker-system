@@ -6,10 +6,11 @@ import { useTheme } from '../contexts/ThemeContext';
 import FriendsModal from './FriendsModal';
 import AddExpenseModal from './AddExpenseModal';
 import NotificationsCenter from './NotificationsCenter';
+import SplitEaseLogo from './SplitEaseLogo';
 import {
   User, Users, Wallet, DollarSign, Activity, Settings, LogOut, Sun, Moon,
   Send, CheckCircle, X, Clock, AtSign, ChevronRight, Plus, BarChart, UserPlus, Mail,
-  ArrowRight, Edit3, Trash2, UserCheck, AlertCircle
+  ArrowRight, Edit3, Trash2, UserCheck, AlertCircle, Shield
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
@@ -17,7 +18,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabase/config';
 
 const UserProfile: React.FC = () => {
-  const { user, userProfile, signOut, updateProfile } = useAuth();
+  const { user, userProfile, signOut, updateProfile, isAdmin } = useAuth();
   const { expenses, totalSpent, myBalance } = useData();
   const { friends, pendingRequests, sendFriendRequest, acceptFriendRequest, rejectFriendRequest, getFriendByUsername } = useFriends();
   const { theme, toggleTheme } = useTheme();
@@ -154,10 +155,7 @@ const UserProfile: React.FC = () => {
         <div className="nav-content">
           <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }} onClick={() => navigate('/dashboard')}>
-              <div className="blob" style={{ width: '40px', height: '40px', background: 'var(--accent-gradient)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 16px var(--accent-glow)' }}>
-                <Wallet size={20} color="white" />
-              </div>
-              <h1 style={{ fontSize: '1.25rem', fontWeight: 800 }}>Split<span className="gradient-text">Ease</span></h1>
+              <SplitEaseLogo size={40} />
             </div>
             <div className="nav-tabs" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <button className="btn btn-ghost" onClick={() => navigate('/dashboard')} style={{ fontSize: '0.85rem', border: 'none' }}>Dashboard</button>
@@ -169,6 +167,11 @@ const UserProfile: React.FC = () => {
             <button onClick={toggleTheme} className="icon-btn" style={{ width: '40px', height: '40px' }}>
               {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
             </button>
+            {isAdmin && (
+              <button onClick={() => navigate('/admin')} className="admin-nav-btn" title="Admin Panel">
+                <Shield size={14} /> <span className="admin-text">Admin</span>
+              </button>
+            )}
             <div className="nav-tabs">
               <button onClick={async () => await signOut()} className="btn btn-danger" style={{ padding: '8px 16px', fontSize: '0.8rem' }}>
                 <LogOut size={14} /> Exit

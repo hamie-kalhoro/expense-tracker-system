@@ -9,6 +9,7 @@ import {
 import { useTheme } from '../contexts/ThemeContext';
 import WelcomeModal from './WelcomeModal';
 import DemoVideoModal from './DemoVideoModal';
+import SplitEaseLogo from './SplitEaseLogo';
 
 
 const LinkedinIcon = ({ size = 20, color = 'currentColor' }: { size?: number; color?: string }) => (
@@ -54,6 +55,7 @@ const LandingPage: React.FC = () => {
   });
   const [isDemoOpen, setIsDemoOpen] = useState(false);
   const [showFreeBanner, setShowFreeBanner] = useState(false);
+  const [recentReviews, setRecentReviews] = useState<any[]>([]);
 
 
   useEffect(() => {
@@ -69,6 +71,19 @@ const LandingPage: React.FC = () => {
             expenses: Number(stats.total_expenses)
           });
         }
+        
+        // Fetch real user reviews that have text
+        const { data: reviewData } = await supabase
+          .from('reviews')
+          .select('id, rating, suggestion, created_at, user:users(username, display_name)')
+          .not('suggestion', 'is', null)
+          .neq('suggestion', '')
+          .order('created_at', { ascending: false })
+          .limit(3);
+          
+        if (reviewData) {
+          setRecentReviews(reviewData);
+        }
       } catch (err) {
         console.error("Error fetching stats:", err);
       }
@@ -83,7 +98,11 @@ const LandingPage: React.FC = () => {
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--page-gradient)' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+      {/* Animated Premium Background */}
+      <div className="animated-mesh-bg" />
+      <div className="mesh-glow" />
+      
       {/* Welcome Modal for New Users */}
       <WelcomeModal />
 
@@ -99,15 +118,7 @@ const LandingPage: React.FC = () => {
         alignItems: 'center', justifyContent: 'space-between', padding: '0 24px',
         boxShadow: 'var(--shadow-lg)'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{
-            width: '38px', height: '38px', background: 'var(--accent-gradient)',
-            borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white'
-          }}>
-            <Wallet size={20} />
-          </div>
-          <span style={{ fontSize: '1.25rem', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>SplitEase</span>
-        </div>
+        <SplitEaseLogo size={38} />
 
         <div className="nav-tabs-desktop" style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
           <span className="nav-link" onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}>Features</span>
@@ -166,7 +177,7 @@ const LandingPage: React.FC = () => {
       )}
 
       {/* Hero Section */}
-      <main style={{ flex: 1, position: 'relative', paddingTop: '160px', overflow: 'hidden' }}>
+      <main style={{ flex: 1, position: 'relative', paddingTop: 'clamp(100px, 12vh, 160px)', overflow: 'hidden' }}>
         {/* Dynamic Background Elements */}
         <div className="blob" style={{
           position: 'absolute', top: '5%', right: '-5%', width: '45vw', height: '45vw',
@@ -180,7 +191,7 @@ const LandingPage: React.FC = () => {
         }} />
 
         <div className="main-container" style={{ position: 'relative', zIndex: 10 }}>
-          <div className="animate-entrance" style={{ textAlign: 'center', maxWidth: '900px', margin: '0 auto 100px auto' }}>
+          <div className="animate-entrance" style={{ textAlign: 'center', maxWidth: '900px', margin: '0 auto 80px auto' }}>
             <div style={{
               display: 'inline-flex', alignItems: 'center', gap: '8px',
               padding: '8px 20px', background: 'var(--bg-card)',
@@ -271,6 +282,51 @@ const LandingPage: React.FC = () => {
             </div>
           </div>
 
+          {/* Live User Reviews Section */}
+          {recentReviews.length > 0 && (
+            <div className="animate-entrance" style={{ animationDelay: '0.6s', width: '100%', maxWidth: '1200px', margin: '0 auto 140px auto' }}>
+              <div style={{ textAlign: 'center', marginBottom: '50px' }}>
+                <div style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '8px',
+                  padding: '6px 16px', background: 'var(--bg-card)',
+                  borderRadius: 'var(--radius-full)', border: '1px solid var(--border)',
+                  marginBottom: '16px'
+                }}>
+                  <Star size={12} color="var(--warning)" fill="var(--warning)" />
+                  <span style={{ fontSize: '0.7rem', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                    Real Feedback
+                  </span>
+                </div>
+                <h3 style={{ fontSize: 'clamp(1.8rem, 4vw, 2.5rem)', fontWeight: 800, marginBottom: '16px' }}>Loved by Friends Everywhere</h3>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem' }}>See what our community is saying about SplitEase.</p>
+              </div>
+              
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px' }}>
+                {recentReviews.map(review => (
+                  <div key={review.id} className="glass card-hover" style={{ padding: '32px', borderRadius: 'var(--radius-xl)', border: '1px solid var(--border)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div className="avatar" style={{ width: '44px', height: '44px', background: 'var(--accent-gradient)', color: 'white', fontWeight: 800, fontSize: '1.1rem' }}>
+                          {review.user?.display_name?.[0]?.toUpperCase() || review.user?.username?.[0]?.toUpperCase() || 'U'}
+                        </div>
+                        <div>
+                          <p style={{ margin: 0, fontWeight: 700, fontSize: '1.05rem', color: 'var(--text-primary)' }}>{review.user?.display_name || review.user?.username}</p>
+                          <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>@{review.user?.username}</p>
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', gap: '2px', background: 'var(--bg-elevated)', padding: '6px 10px', borderRadius: 'var(--radius-full)' }}>
+                        {[1, 2, 3, 4, 5].map(i => <Star key={i} size={12} fill={i <= review.rating ? "var(--warning)" : "transparent"} color="var(--warning)" />)}
+                      </div>
+                    </div>
+                    <p style={{ margin: 0, fontSize: '1rem', color: 'var(--text-secondary)', lineHeight: 1.6, fontStyle: 'italic' }}>
+                      "{review.suggestion}"
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
         </div>
       </main>
 
@@ -282,11 +338,8 @@ const LandingPage: React.FC = () => {
         <div className="main-container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '60px', marginBottom: '80px' }}>
           {/* Brand Col */}
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
-              <div style={{ width: '36px', height: '36px', background: 'var(--accent-gradient)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
-                <Wallet size={20} />
-              </div>
-              <span style={{ fontSize: '1.25rem', fontWeight: 800 }}>SplitEase</span>
+            <div style={{ marginBottom: '24px' }}>
+              <SplitEaseLogo size={36} />
             </div>
             <p style={{ fontSize: '0.95rem', color: 'var(--text-muted)', lineHeight: 1.7, maxWidth: '280px' }}>
               Redefining social finance through transparency and world-class design. Build stronger bonds, one split at a time.

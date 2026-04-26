@@ -156,41 +156,11 @@ const Auth: React.FC = () => {
         opacity: 0.6, zIndex: 0
       }} />
 
-      {/* Back to Home */}
-      <button
-        onClick={() => navigate('/')}
-        className="glass"
-        style={{
-          position: 'absolute', top: '24px', left: '24px',
-          borderRadius: 'var(--radius-md)', padding: '10px 16px',
-          cursor: 'pointer', color: 'var(--text-primary)',
-          zIndex: 50, display: 'flex', alignItems: 'center', gap: '8px',
-          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-          fontWeight: 600, fontSize: '0.85rem', border: '1px solid var(--border)'
-        }}
-      >
-        <ArrowLeft size={16} /> Back
-      </button>
-
-      {/* Theme toggle */}
-      <button
-        onClick={toggleTheme}
-        className="glass theme-spin"
-        style={{
-          position: 'absolute', top: '24px', right: '24px',
-          borderRadius: 'var(--radius-md)', padding: '12px',
-          cursor: 'pointer', color: 'var(--text-primary)',
-          zIndex: 50, display: 'flex'
-        }}
-      >
-        {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
-      </button>
-
       <div
         className="glass animate-entrance"
         style={{
-          maxWidth: '1000px',
-          width: '100%',
+          maxWidth: '850px',
+          width: '95%',
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
           borderRadius: 'var(--radius-xl)',
@@ -202,7 +172,7 @@ const Auth: React.FC = () => {
       >
         {/* Left Side: Brand/Visuals (Hidden on mobile) */}
         <div className="nav-tabs" style={{
-          padding: 'clamp(40px, 8vw, 60px)',
+          padding: 'clamp(32px, 5vw, 48px)',
           background: 'linear-gradient(225deg, #4f46e5 0%, #7626e8 100%)',
           color: 'white',
           display: 'flex',
@@ -211,6 +181,10 @@ const Auth: React.FC = () => {
           position: 'relative',
           overflow: 'hidden'
         }}>
+          {/* Back Button (Desktop) */}
+          <button onClick={() => navigate('/')} className="icon-btn desktop-only" style={{ position: 'absolute', top: '24px', left: '24px', color: 'white', zIndex: 10 }}>
+            <ArrowLeft size={20} />
+          </button>
           {/* Subtle grid pattern */}
           <div style={{
             position: 'absolute', inset: 0, 
@@ -227,11 +201,11 @@ const Auth: React.FC = () => {
             }}>
               <Wallet size={32} />
             </div>
-            <h2 style={{ fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', fontWeight: 800, marginBottom: '16px', lineHeight: 1.1 }}>
+            <h2 style={{ fontSize: 'clamp(1.5rem, 3.5vw, 2.2rem)', fontWeight: 800, marginBottom: '16px', lineHeight: 1.1 }}>
               Secure your <br /> 
               <span className="text-glow">finances.</span>
             </h2>
-            <p style={{ fontSize: '1rem', opacity: 0.8, lineHeight: 1.6, maxWidth: '320px' }}>
+            <p style={{ fontSize: '0.95rem', opacity: 0.8, lineHeight: 1.6, maxWidth: '280px' }}>
               SplitEase helps you track, split, and settle debts with friends in a secure, aesthetic environment.
             </p>
 
@@ -252,10 +226,19 @@ const Auth: React.FC = () => {
 
         {/* Right Side: Forms */}
         <div style={{
-          padding: 'clamp(32px, 6vw, 60px) clamp(24px, 5vw, 48px)',
+          padding: 'clamp(24px, 4vw, 40px) clamp(24px, 4vw, 36px)',
           background: 'var(--bg-card)',
           position: 'relative'
         }}>
+          {/* Mobile Back Button */}
+          <button onClick={() => navigate('/')} className="icon-btn mobile-only" style={{ position: 'absolute', top: '24px', left: '24px', color: 'var(--text-primary)', zIndex: 10 }}>
+            <ArrowLeft size={20} />
+          </button>
+
+          {/* Theme Toggle */}
+          <button onClick={toggleTheme} className="icon-btn theme-spin" style={{ position: 'absolute', top: '24px', right: '24px', color: 'var(--text-primary)', zIndex: 10 }}>
+            {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+          </button>
           <div style={{ textAlign: 'center', marginBottom: '32px' }}>
             <h1 style={{ fontSize: 'clamp(1.5rem, 4vw, 2rem)', fontWeight: 800, marginBottom: '8px' }}>
               {isLogin ? 'Access Portal' : 'Register Now'}

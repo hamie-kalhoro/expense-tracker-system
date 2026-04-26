@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
 import { supabase } from '../supabase/config';
 import { useAuth } from './AuthContext';
 
@@ -17,6 +17,8 @@ export interface Notification {
 interface NotificationsContextType {
   notifications: Notification[];
   unreadCount: number;
+  pushPermission: NotificationPermission | 'unsupported';
+  requestPushPermission: () => Promise<void>;
   addNotification: (notification: {
     userId: string;
     type: string;
@@ -34,9 +36,82 @@ interface NotificationsContextType {
 
 const NotificationsContext = createContext<NotificationsContextType | undefined>(undefined);
 
+// ═══════════════════════════════════════════
+// Browser Push Notification Helpers
+// ═══════════════════════════════════════════
+
+const isPushSupported = () => 'Notification' in window;
+
+const sendBrowserNotification = (title: string, body: string, icon?: string, tag?: string) => {
+  if (!isPushSupported() || Notification.permission !== 'granted') return;
+
+  try {
+    const notif = new window.Notification(title, {
+      body,
+      icon: icon || '/favicon.svg',
+      badge: '/favicon.svg',
+      tag: tag || `splitease-${Date.now()}`,
+      silent: false,
+      requireInteraction: false,
+    });
+
+    // Auto-close after 6 seconds
+    setTimeout(() => notif.close(), 6000);
+
+    // Focus window on click
+    notif.onclick = () => {
+      window.focus();
+      notif.close();
+    };
+  } catch (e) {
+    console.warn('Browser notification failed:', e);
+  }
+};
+
+const getNotificationEmoji = (type: string) => {
+  switch (type) {
+    case 'friend-request': return '👋';
+    case 'friend-accepted': return '🤝';
+    case 'expense-added': return '💸';
+    case 'settlement': return '✅';
+    default: return '🔔';
+  }
+};
+
+// ═══════════════════════════════════════════
+// Provider
+// ═══════════════════════════════════════════
+
 export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [pushPermission, setPushPermission] = useState<NotificationPermission | 'unsupported'>(
+    isPushSupported() ? window.Notification.permission : 'unsupported'
+  );
+  // Track known notification IDs to only push browser notifications for NEW ones
+  const knownIdsRef = useRef<Set<string>>(new Set());
+  const isInitialLoadRef = useRef(true);
+
+  const requestPushPermission = useCallback(async () => {
+    if (!isPushSupported()) {
+      setPushPermission('unsupported');
+      return;
+    }
+    try {
+      const result = await window.Notification.requestPermission();
+      setPushPermission(result);
+    } catch (e) {
+      console.warn('Push permission request failed:', e);
+    }
+  }, []);
+
+  // Auto-request permission when user logs in
+  useEffect(() => {
+    if (user && isPushSupported() && window.Notification.permission === 'default') {
+      const timer = setTimeout(() => requestPushPermission(), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [user, requestPushPermission]);
 
   const fetchNotifications = useCallback(async () => {
     if (!user) return;
@@ -51,7 +126,7 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
       return;
     }
 
-    setNotifications(data.map(n => ({
+    const mapped = data.map(n => ({
       id: n.id,
       type: n.type,
       title: n.title,
@@ -61,12 +136,35 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
       actionUrl: n.action_url,
       fromName: n.from_name,
       fromUid: n.from_uid
-    })));
+    }));
+
+    // Detect truly new notifications and fire browser push
+    if (!isInitialLoadRef.current) {
+      mapped.forEach(notif => {
+        if (!knownIdsRef.current.has(notif.id) && !notif.read) {
+          const emoji = getNotificationEmoji(notif.type);
+          sendBrowserNotification(
+            `${emoji} ${notif.title}`,
+            notif.message,
+            '/favicon.svg',
+            `splitease-${notif.id}`
+          );
+        }
+      });
+    }
+
+    // Update known IDs
+    knownIdsRef.current = new Set(mapped.map(n => n.id));
+    isInitialLoadRef.current = false;
+
+    setNotifications(mapped);
   }, [user]);
 
   useEffect(() => {
     if (!user) {
       setNotifications([]);
+      knownIdsRef.current = new Set();
+      isInitialLoadRef.current = true;
       return;
     }
 
@@ -151,6 +249,8 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
       value={{
         notifications,
         unreadCount,
+        pushPermission,
+        requestPushPermission,
         addNotification,
         markAsRead,
         markAllAsRead,

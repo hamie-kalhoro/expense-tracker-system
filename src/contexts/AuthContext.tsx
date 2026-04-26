@@ -10,6 +10,7 @@ export interface UserProfile {
   username: string;
   photoURL?: string;
   bio?: string;
+  role: string;
   createdAt: string;
 }
 
@@ -17,6 +18,7 @@ interface AuthContextType {
   user: User | null;
   userProfile: UserProfile | null;
   loading: boolean;
+  isAdmin: boolean;
   signInWithGoogle: () => Promise<void>;
   signInWithEmail: (identifier: string, password: string) => Promise<void>;
   signUpWithEmail: (email: string, password: string, username: string) => Promise<any>;
@@ -52,6 +54,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           username: data.username,
           photoURL: data.photo_url || undefined,
           bio: data.bio || undefined,
+          role: data.role || 'user',
           createdAt: data.created_at,
         });
 
@@ -136,6 +139,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               username: data.username,
               photoURL: data.photo_url || undefined,
               bio: data.bio || undefined,
+              role: data.role || 'user',
               createdAt: data.created_at,
             });
             setLoading(false); // Stop loading if this was the first time we got the profile
@@ -261,7 +265,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   return (
     <AuthContext.Provider
-      value={{ user, userProfile, loading, signInWithGoogle, signInWithEmail, signUpWithEmail, updateProfile, signOut, isMockMode, checkUsernameAvailability }}
+      value={{ user, userProfile, loading, isAdmin: userProfile?.role === 'admin', signInWithGoogle, signInWithEmail, signUpWithEmail, updateProfile, signOut, isMockMode, checkUsernameAvailability }}
     >
       {!loading && children}
     </AuthContext.Provider>
