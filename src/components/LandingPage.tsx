@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabase/config';
-import { 
-  Wallet, Activity, Users, Shield, Zap, ArrowRight, 
-  CheckCircle, Sun, Moon, Phone, Mail, 
+import {
+  Wallet, Activity, Users, Shield, Zap, ArrowRight,
+  CheckCircle, Sun, Moon, Phone, Mail,
   User, ExternalLink, Code, Share2, Star
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
@@ -53,13 +53,14 @@ const LandingPage: React.FC = () => {
     expenses: 0
   });
   const [isDemoOpen, setIsDemoOpen] = useState(false);
+  const [showFreeBanner, setShowFreeBanner] = useState(false);
 
 
   useEffect(() => {
     async function fetchStats() {
       try {
         const { data, error } = await supabase.rpc('get_platform_stats');
-        
+
         if (data && data.length > 0 && !error) {
           const stats = data[0];
           setStats({
@@ -91,7 +92,7 @@ const LandingPage: React.FC = () => {
 
 
       {/* Premium Navigation Bar */}
-      <nav className="glass" style={{ 
+      <nav className="glass" style={{
         position: 'fixed', top: '20px', left: '50%', transform: 'translateX(-50%)',
         width: 'calc(100% - 32px)', maxWidth: '1200px', height: '70px',
         borderRadius: 'var(--radius-lg)', zIndex: 100, display: 'flex',
@@ -99,7 +100,7 @@ const LandingPage: React.FC = () => {
         boxShadow: 'var(--shadow-lg)'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{ 
+          <div style={{
             width: '38px', height: '38px', background: 'var(--accent-gradient)',
             borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white'
           }}>
@@ -111,13 +112,16 @@ const LandingPage: React.FC = () => {
         <div className="nav-tabs-desktop" style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
           <span className="nav-link" onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}>Features</span>
           <span className="nav-link" onClick={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })}>About</span>
-          <span className="nav-link" onClick={() => alert("SplitEase is 100% free forever! No pricing tiers, no hidden fees.")}>Pricing</span>
+          <span className="nav-link" onClick={() => {
+            setShowFreeBanner(true);
+            setTimeout(() => setShowFreeBanner(false), 2000);
+          }}>Pricing</span>
         </div>
 
         <div className="theme-toggle-wrapper">
-          <button 
+          <button
             onClick={() => navigate('/login')}
-            className="btn btn-primary" 
+            className="btn btn-primary"
             style={{ padding: '8px 24px', fontSize: '0.85rem', borderRadius: '14px', fontWeight: 700 }}
           >
             Get Started
@@ -128,15 +132,48 @@ const LandingPage: React.FC = () => {
         </div>
       </nav>
 
+      {/* Dynamic "Free For All" Banner */}
+      {showFreeBanner && (
+        <div style={{
+          position: 'fixed', top: '110px', left: '50%', transform: 'translateX(-50%)',
+          zIndex: 1000, pointerEvents: 'none', width: 'auto', minWidth: '320px'
+        }}>
+          <div className="glass" style={{
+            padding: '16px 28px', borderRadius: 'var(--radius-lg)',
+            background: theme === 'dark' ? 'rgba(15, 23, 42, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+            color: 'var(--text-primary)',
+            display: 'flex', alignItems: 'center', gap: '16px',
+            boxShadow: 'var(--shadow-xl)',
+            border: '2px solid var(--accent-1)',
+            backdropFilter: 'blur(16px)',
+            animation: 'slideDown 0.5s cubic-bezier(0.16, 1, 0.3, 1)'
+          }}>
+            <div style={{ 
+              background: 'var(--accent-gradient)', 
+              padding: '10px', 
+              borderRadius: '12px',
+              boxShadow: '0 4px 12px var(--accent-glow)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center'
+            }}>
+              <Zap size={20} color="white" fill="white" />
+            </div>
+            <div>
+              <p style={{ margin: 0, fontWeight: 800, fontSize: '1rem', letterSpacing: '0.02em', color: 'var(--text-primary)' }}>100% Free For Everyone</p>
+              <p style={{ margin: 0, fontSize: '0.75rem', opacity: 0.8, fontWeight: 600, color: 'var(--text-secondary)' }}>No hidden fees. No premium tiers. Just SplitEase.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Hero Section */}
       <main style={{ flex: 1, position: 'relative', paddingTop: '160px', overflow: 'hidden' }}>
         {/* Dynamic Background Elements */}
-        <div className="blob" style={{ 
+        <div className="blob" style={{
           position: 'absolute', top: '5%', right: '-5%', width: '45vw', height: '45vw',
           background: 'radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%)',
           zIndex: 0, animation: 'pulse 10s infinite alternate'
         }} />
-        <div className="blob" style={{ 
+        <div className="blob" style={{
           position: 'absolute', bottom: '15%', left: '-10%', width: '35vw', height: '35vw',
           background: 'radial-gradient(circle, rgba(236, 72, 153, 0.12) 0%, transparent 70%)',
           zIndex: 0, animation: 'pulse 8s infinite alternate-reverse'
@@ -144,10 +181,10 @@ const LandingPage: React.FC = () => {
 
         <div className="main-container" style={{ position: 'relative', zIndex: 10 }}>
           <div className="animate-entrance" style={{ textAlign: 'center', maxWidth: '900px', margin: '0 auto 100px auto' }}>
-            <div style={{ 
-              display: 'inline-flex', alignItems: 'center', gap: '8px', 
-              padding: '8px 20px', background: 'var(--bg-card)', 
-              borderRadius: 'var(--radius-full)', border: '1px solid var(--border)', 
+            <div style={{
+              display: 'inline-flex', alignItems: 'center', gap: '8px',
+              padding: '8px 20px', background: 'var(--bg-card)',
+              borderRadius: 'var(--radius-full)', border: '1px solid var(--border)',
               marginBottom: '32px', boxShadow: 'var(--shadow-md)',
               animation: 'bounce 3s infinite'
             }}>
@@ -156,12 +193,12 @@ const LandingPage: React.FC = () => {
                 Split Smart. Live Easy.
               </span>
             </div>
-            
+
             <h1 style={{ fontSize: 'clamp(2.5rem, 8vw, 5.5rem)', fontWeight: 800, lineHeight: 1.05, marginBottom: '28px', letterSpacing: '-0.04em' }}>
               Financial Clarity <br />
               <span className="gradient-text">For Every Circle.</span>
             </h1>
-            
+
             <p style={{ fontSize: 'clamp(1rem, 2vw, 1.25rem)', color: 'var(--text-secondary)', marginBottom: '48px', maxWidth: '650px', margin: '0 auto 48px auto', lineHeight: 1.6 }}>
               The premium way to track shared expenses, settle debts, and maintain financial transparency with friends and family.
             </p>
@@ -186,9 +223,9 @@ const LandingPage: React.FC = () => {
               { icon: Activity, title: "Smart Analytics", desc: "Deep insights into your spending habits with beautiful data visualizations." }
             ].map((feature, idx) => (
               <div key={idx} className="glass card-hover" style={{ padding: '40px 32px', borderRadius: 'var(--radius-xl)', border: '1px solid var(--border)' }}>
-                <div style={{ 
-                  width: '56px', height: '56px', borderRadius: '16px', 
-                  background: 'var(--accent-glow)', color: 'var(--accent-1)', 
+                <div style={{
+                  width: '56px', height: '56px', borderRadius: '16px',
+                  background: 'var(--accent-glow)', color: 'var(--accent-1)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '24px'
                 }}>
                   <feature.icon size={26} />
@@ -200,8 +237,8 @@ const LandingPage: React.FC = () => {
           </div>
 
           {/* Social Proof / Stats Concept */}
-          <div className="glass animate-entrance stats-container" style={{ 
-            animationDelay: '0.4s', borderRadius: 'var(--radius-xl)', 
+          <div className="glass animate-entrance stats-container" style={{
+            animationDelay: '0.4s', borderRadius: 'var(--radius-xl)',
             marginBottom: '140px',
             border: '1px solid var(--border)', background: 'var(--bg-elevated)'
           }}>
@@ -211,21 +248,21 @@ const LandingPage: React.FC = () => {
               </div>
               <p className="stat-label">Active Users</p>
             </div>
-            
+
             <div className="stats-divider" style={{ background: 'var(--border)' }} />
-            
+
             <div className="stat-item" style={{ textAlign: 'center' }}>
               <div className="stat-number" style={{ fontWeight: 900, color: 'var(--warning)', lineHeight: 1 }}>
                 {stats.rating > 0 ? stats.rating.toFixed(1) : '0.0'}
               </div>
               <p className="stat-label">Average Rating</p>
               <div style={{ display: 'flex', justifyContent: 'center', gap: '4px', marginTop: '8px' }}>
-                {[1,2,3,4,5].map(i => <Star key={i} size={16} fill={i <= Math.round(stats.rating) ? "var(--warning)" : "transparent"} color="var(--warning)" />)}
+                {[1, 2, 3, 4, 5].map(i => <Star key={i} size={16} fill={i <= Math.round(stats.rating) ? "var(--warning)" : "transparent"} color="var(--warning)" />)}
               </div>
             </div>
-            
+
             <div className="stats-divider" style={{ background: 'var(--border)' }} />
-            
+
             <div className="stat-item" style={{ textAlign: 'center' }}>
               <div className="stat-number" style={{ fontWeight: 900, color: 'var(--success)', lineHeight: 1 }}>
                 {formatNumber(stats.expenses, true)}
@@ -238,8 +275,8 @@ const LandingPage: React.FC = () => {
       </main>
 
       {/* Premium Footer with Personal Details */}
-      <footer id="about" className="glass" style={{ 
-        marginTop: 'auto', borderTop: '1px solid var(--border)', 
+      <footer id="about" className="glass" style={{
+        marginTop: 'auto', borderTop: '1px solid var(--border)',
         padding: '80px 24px 40px 24px', borderRadius: '60px 60px 0 0'
       }}>
         <div className="main-container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '60px', marginBottom: '80px' }}>
@@ -262,7 +299,7 @@ const LandingPage: React.FC = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-secondary)' }}>
                 <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--accent-gradient)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 800, fontSize: '0.7rem' }}>HK</div>
-                <span style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)' }}>Hamid Ali (Kalhoro)</span>
+                <span style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)' }}>Hamid Ali Kalhoro</span>
               </div>
               <a href="https://www.instagram.com/hamidi_2oo5/" target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-secondary)', textDecoration: 'none' }} className="footer-link">
                 <InstagramIcon size={20} />
@@ -307,9 +344,9 @@ const LandingPage: React.FC = () => {
           </div>
         </div>
 
-        <div style={{ 
-          borderTop: '1px solid var(--border)', paddingTop: '40px', 
-          display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px' 
+        <div style={{
+          borderTop: '1px solid var(--border)', paddingTop: '40px',
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px'
         }}>
           <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
             © 2026 SplitEase. Designed & Developed by <span className="gradient-text" style={{ fontWeight: 800 }}>Hamid Ali Kalhoro</span>.
@@ -322,6 +359,16 @@ const LandingPage: React.FC = () => {
       </footer>
 
       <style>{`
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            transform: translateY(-20px) scale(0.95);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
+        }
         @keyframes bounce {
           0%, 100% { transform: translateY(0); }
           50% { transform: translateY(-8px); }
